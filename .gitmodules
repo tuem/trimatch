@@ -1,0 +1,3 @@
+[submodule "external/sftrie"]
+	path = external/sftrie
+	url = https://github.com/tuem/sftrie.git
