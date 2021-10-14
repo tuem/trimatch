@@ -1,0 +1,59 @@
+/*
+trimatch
+https://github.com/tuem/trimatch
+
+Copyright 2021 Takashi Uemura
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+	http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+#ifndef TRIMATCH_INDEX_HPP
+#define TRIMATCH_INDEX_HPP
+
+#include <vector>
+
+#include "searcher.hpp"
+
+namespace trimatch
+{
+
+template<class text, class integer, class trie>
+class index
+{
+public:
+	using searcher_type = searcher<text, integer, trie>;
+
+	template<typename iterator>
+	index(iterator begin, iterator end);
+
+	searcher_type searcher();
+
+private:
+	const trie T;
+};
+
+template<class text, class integer, class trie>
+template<class iterator>
+index<text, integer, trie>::index(iterator begin, iterator end): T(begin, end)
+{}
+
+template<class text, class integer, class trie>
+typename index<text, integer, trie>::searcher_type
+index<text, integer, trie>::searcher()
+{
+	return trimatch::searcher<text, integer, trie>(T);
+}
+
+}
+
+#endif
