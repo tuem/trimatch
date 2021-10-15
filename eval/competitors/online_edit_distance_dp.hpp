@@ -51,6 +51,11 @@ public:
 		return D[i].back();
 	}
 
+	bool matched() const
+	{
+		return D[i].back() <= max;
+	}
+
 	void back()
 	{
 		if(i > 0)

@@ -86,6 +86,22 @@ size_t exec_approx_bp(const std::vector<text>& texts,
 	return found;
 }
 
+template<typename text, typename integer>
+size_t exec_approx_dfa_trie(const sftrie::set<text, integer>& index,
+	const std::vector<text>& queries, integer max_edits = 1)
+{
+	size_t found = 0;
+	trimatch::searcher<text, integer, sftrie::set<text, integer>> searcher(index);
+	std::vector<std::pair<text, integer>> results;
+	for(const auto& query: queries){
+		trimatch::LevenshteinDFA<text> dfa(query, max_edits);
+		searcher.approx(dfa, results);
+		found += results.size();
+		results.clear();
+	}
+	return found;
+}
+
 template<typename text>
 bool benchmark(const std::string& corpus_path, const std::string& method, size_t max_edits)
 {
@@ -174,6 +190,9 @@ bool benchmark(const std::string& corpus_path, const std::string& method, size_t
 	else if(method == "bp"){
 		found_approx = exec_approx_bp(texts, shuffled_queries, max_edits);
 	}
+	else if(method == "dfa-trie"){
+		found_approx = exec_approx_dfa_trie(index, shuffled_queries, max_edits);
+	}
 	else{
 		throw std::runtime_error("input file is not available: " + method);
 	}
@@ -215,9 +234,10 @@ int main(int argc, char* argv[])
 	(void)argv;
 
 	std::string corpus_path = "corpus.txt";
-	std::string method = "dp";
+	//std::string method = "dp";
 	//std::string method = "dp-trie";
 	//std::string method = "bp";
+	std::string method = "dfa-trie";
 	integer max_edits = 2;
 
 	benchmark<text>(corpus_path, method, max_edits);

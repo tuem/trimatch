@@ -23,8 +23,6 @@ limitations under the License.
 #include "index.hpp"
 #include "searcher.hpp"
 #include "builder.hpp"
-
-// TODO: implement DFA version
-//#include "edit_distance_dfa.hpp"
+#include "levenshtein_dfa.hpp"
 
 #endif

@@ -87,7 +87,8 @@ void searcher<text, integer, trie>::approx_step(
 	for(integer i = T.data[node_id].next; i < T.data[T.data[node_id].next].next; ++i){
 		if(matcher.update(T.data[i].label)){
 			current.push_back(T.data[i].label);
-			if(T.data[i].match && matcher.distance() <= matcher.max)
+			// LevenshteinDFA may return incorrect distance
+			if(T.data[i].match && matcher.matched())
 				results.push_back(std::make_pair(current, matcher.distance()));
 			if(!T.data[i].leaf)
 				approx_step(matcher, i, current, results);

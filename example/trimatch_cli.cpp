@@ -24,8 +24,6 @@ limitations under the License.
 
 #include <trimatch/trimatch.hpp>
 
-// TODO: use DFA
-#include "../eval/competitors/online_edit_distance_dp.hpp"
 
 using text = std::string;
 using integer = text::size_type;
@@ -83,8 +81,8 @@ int main(int argc, char* argv[])
 			}
 			else if(back == '?'){
 				std::vector<std::pair<text, integer>> results;
-				OnlineEditDistance<text> ed(query, max_edits);
-				searcher.approx(ed, results);
+				trimatch::LevenshteinDFA<text> dfa(query, max_edits);
+				searcher.approx(dfa, results);
 				for(const auto& r: results)
 					std::cout << std::setw(4) << ++count << ": " << r.first << ", distance=" << r.second << std::endl;
 			}
