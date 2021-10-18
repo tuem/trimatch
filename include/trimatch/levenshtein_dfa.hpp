@@ -144,12 +144,20 @@ constexpr const typename LevenshteinDFA<text>::symbol LevenshteinDFA<text>::null
 template<typename text>
 inline bool LevenshteinDFA<text>::update(const symbol c)
 {
+	// binary search
 	integer current = states[current_states.back()].start, last = states[current_states.back() + 1].start - 1;
-	for(; current < last && c < transitions[current].label; ++current);
+	for(integer w = last - current, m; w > 16; w = m){
+		m = w >> 1;
+		current += transitions[current + m].label < c ? w - m : 0;
+	}
+	// linear searchsearch
+	for(; current < last && transitions[current].label < c; ++current);
+
 	current = transitions[transitions[current].label == c ? current : last].next;
 	bool updatable = states[current].edits <= max_edits;
 	if(updatable)
 		current_states.push_back(current);
+
 	return updatable;
 }
 
