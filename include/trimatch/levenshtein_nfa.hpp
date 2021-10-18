@@ -18,7 +18,7 @@ limitations under the License.
 */
 
 /*
-	DFA version of Levenshtein automata by Jules Jacobs
+	DFA version of Levenshtein automata originally by Jules Jacobs
 	https://julesjacobs.com/2015/06/17/disqus-levenshtein-simple-and-fast.html
 */
 
@@ -50,7 +50,7 @@ public:
 	{
 		std::vector<state> states;
 		for(integer i = 0; i <= max_edits; ++i)
-			states.push_back(std::make_pair(i, i));
+			states.emplace_back(i, i);
 		return states;
 	}
 
@@ -58,7 +58,7 @@ public:
 	{
 		std::vector<state> new_states;
 		if(!states.empty() && states.front().first == 0 && states.front().second < max_edits)
-			new_states.push_back(std::make_pair(0, states.front().second + 1));
+			new_states.emplace_back(0, states.front().second + 1);
 
 		for(integer j = 0; j < states.size(); ++j){
 			auto i = states[j].first;
@@ -70,7 +70,7 @@ public:
 			if(j + 1 < states.size() && states[j + 1].first == i + 1)
 				d = std::min(d, states[j + 1].second + 1);
 			if(d <= max_edits)
-				new_states.push_back(std::make_pair(i + 1, d));
+				new_states.emplace_back(i + 1, d);
 		}
 
 		return new_states;

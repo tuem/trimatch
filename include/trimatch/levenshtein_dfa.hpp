@@ -18,7 +18,7 @@ limitations under the License.
 */
 
 /*
-	DFA version of Levenshtein automata by Jules Jacobs
+	DFA version of Levenshtein automata originally by Jules Jacobs
 	https://julesjacobs.com/2015/06/17/disqus-levenshtein-simple-and-fast.html
 */
 
@@ -45,6 +45,9 @@ public:
 	struct state;
 	struct transition;
 
+	const text pattern;
+	const integer max_edits;
+
 	static constexpr const symbol nullchar();
 
 	LevenshteinDFA(const LevenshteinNFA<text>& nfa);
@@ -56,18 +59,13 @@ public:
 	integer max_distance() const;
 	integer distance();
 
-	template<class ostream> void dump(ostream& os) const;
-
-	const text pattern;
-	const integer max_edits;
-
 private:
 	std::vector<state> states;
 	std::vector<transition> transitions;
 
 	std::vector<integer> current_states;
 
-	integer explore(const LevenshteinNFA<text>& nfa,
+	integer convert(const LevenshteinNFA<text>& nfa,
 		const std::vector<nfa_state>& nfa_states, const std::set<symbol>& nfa_transitions,
 		std::map<std::vector<nfa_state>, integer>& dfa_states, integer& counter);
 };
@@ -78,6 +76,9 @@ struct LevenshteinDFA<text>::state
 	integer start;
 	bool match;
 	integer edits;
+
+	state();
+	state(integer start, bool match, integer edits);
 };
 
 template<typename text>
@@ -90,6 +91,14 @@ struct LevenshteinDFA<text>::transition
 	transition(integer id, integer next, symbol label);
 	bool operator<(const transition& s) const;
 };
+
+template<typename text>
+LevenshteinDFA<text>::state::state(){}
+
+template<typename text>
+LevenshteinDFA<text>::state::state(integer start, bool match, integer edits):
+	start(start), match(match), edits(edits)
+{}
 
 template<typename text>
 LevenshteinDFA<text>::transition::transition(integer id, integer next, symbol label):
@@ -115,7 +124,7 @@ LevenshteinDFA<text>::LevenshteinDFA(const LevenshteinNFA<text>& nfa):
 	auto nfa_transitions = nfa.transitions();
 	std::map<std::vector<nfa_state>, integer> dfa_states;
 	integer counter = 0;
-	explore(nfa, nfa_states, nfa_transitions, dfa_states, counter);
+	convert(nfa, nfa_states, nfa_transitions, dfa_states, counter);
 	states.resize(counter);
 
 	std::sort(transitions.begin(), transitions.end());
@@ -123,7 +132,7 @@ LevenshteinDFA<text>::LevenshteinDFA(const LevenshteinNFA<text>& nfa):
 		if(i == 0 || transitions[i - 1].id < transitions[i].id)
 			states[transitions[i].id].start = i;
 	// sentinel
-	states.push_back({transitions.size(), false, max_edits + 1});
+	states.emplace_back(transitions.size(), false, max_edits + 1);
 
 	// initial state
 	current_states.push_back(0);
@@ -186,29 +195,8 @@ inline typename LevenshteinDFA<text>::integer LevenshteinDFA<text>::distance()
 }
 
 template<typename text>
-template<class ostream>
-void LevenshteinDFA<text>::dump(ostream& os) const
-{
-	for(integer i = 0; i < transitions.size(); ++i){
-		const auto& t = transitions[i];
-		if(i == 0 || transitions[i - 1].id < t.id){
-			const auto& s = states[t.id];
-			os << "i=" << i << ": id=" << t.id << ", start=" << s.start
-				<< ", distance=" << s.edits << (s.match ? " (match)" : "") << std::endl;
-		}
-		os << "  (" << t.id << ", ";
-		if(t.label != nullchar())
-			os << t.label;
-		else
-			os << '*';
-		os << ") => " << t.next;
-		os << std::endl;
-	}
-}
-
-template<typename text>
 typename LevenshteinDFA<text>::integer
-LevenshteinDFA<text>::explore(const LevenshteinNFA<text>& nfa,
+LevenshteinDFA<text>::convert(const LevenshteinNFA<text>& nfa,
 	const std::vector<nfa_state>& nfa_states, const std::set<symbol>& nfa_transitions,
 	std::map<std::vector<nfa_state>, integer>& dfa_states, integer& counter)
 {
@@ -224,19 +212,19 @@ LevenshteinDFA<text>::explore(const LevenshteinNFA<text>& nfa,
 	for(const auto& s: nfa_states)
 		if(s.second < best_edits)
 			best_edits = s.second;
-	states.push_back({current_node_id, nfa.is_match(nfa_states), best_edits}); // current_node_id is a placeholder
+	states.emplace_back(current_node_id, nfa.is_match(nfa_states), best_edits); // current_node_id is a placeholder
 
 	// *-transition
 	auto new_nfa_states = nfa.step(nfa_states, nullchar());
-	auto next0 = explore(nfa, new_nfa_states, nfa_transitions, dfa_states, counter);
-	transitions.push_back({current_node_id, next0, nullchar()});
+	auto next0 = convert(nfa, new_nfa_states, nfa_transitions, dfa_states, counter);
+	transitions.emplace_back(current_node_id, next0, nullchar());
 
 	// check other transitions with symbols in the pattern
 	for(auto label: nfa_transitions){
 		auto new_nfa_states = nfa.step(nfa_states, label);
-		auto next = explore(nfa, new_nfa_states, nfa_transitions, dfa_states, counter);
+		auto next = convert(nfa, new_nfa_states, nfa_transitions, dfa_states, counter);
 		if(next != next0)
-			transitions.push_back({current_node_id, next, label});
+			transitions.emplace_back(current_node_id, next, label);
 	}
 
 	return current_node_id;
