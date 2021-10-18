@@ -77,9 +77,7 @@ template<typename text>
 struct LevenshteinDFA<text>::state
 {
 	integer start;
-	integer failure;
 	bool match;
-	integer position;
 	integer edits;
 };
 
@@ -122,14 +120,11 @@ LevenshteinDFA<text>::LevenshteinDFA(const LevenshteinNFA<text>& nfa):
 	states.resize(counter);
 
 	std::sort(transitions.begin(), transitions.end());
-	for(integer i = 0; i < transitions.size(); ++i){
+	for(integer i = 0; i < transitions.size(); ++i)
 		if(i == 0 || transitions[i - 1].id < transitions[i].id)
 			states[transitions[i].id].start = i;
-		if(transitions[i].label == nullchar())
-			states[transitions[i].id].failure = transitions[i].next;
-	}
 	// sentinel
-	states.push_back({transitions.size(), 0, false, pattern.size(), max_edits + 1});
+	states.push_back({transitions.size(), false, max_edits + 1});
 
 	// initial state
 	current_states.push_back(0);
@@ -191,8 +186,8 @@ void LevenshteinDFA<text>::dump(ostream& os) const
 		const auto& t = transitions[i];
 		if(i == 0 || transitions[i - 1].id < t.id){
 			const auto& s = states[t.id];
-			os << "i=" << i << ": id=" << t.id << ", start=" << s.start << ", pos=" << s.position <<
-				", distance=" << s.edits << (s.match ? " (match)" : "") << std::endl;
+			os << "i=" << i << ": id=" << t.id << ", start=" << s.start
+				<< ", distance=" << s.edits << (s.match ? " (match)" : "") << std::endl;
 		}
 		os << "  (" << t.id << ", ";
 		if(t.label != nullchar())
@@ -219,14 +214,10 @@ LevenshteinDFA<text>::explore(const LevenshteinNFA<text>& nfa,
 	dfa_states.insert(p, std::make_pair(nfa_states, current_node_id));
 
 	integer best_edits = max_edits + 1;
-	integer position = pattern.size();
-	for(const auto& s: nfa_states){
-		if(s.second < best_edits){
-			position = s.first;
+	for(const auto& s: nfa_states)
+		if(s.second < best_edits)
 			best_edits = s.second;
-		}
-	}
-	states.push_back({current_node_id, 0, nfa.is_match(nfa_states), position, best_edits}); // current_node_id is a placeholder
+	states.push_back({current_node_id, nfa.is_match(nfa_states), best_edits}); // current_node_id is a placeholder
 
 	// *-transition
 	auto new_nfa_states = nfa.step(nfa_states, nullchar());

@@ -238,7 +238,7 @@ int main(int argc, char* argv[])
 	//std::string method = "dp-trie";
 	//std::string method = "bp";
 	std::string method = "dfa-trie";
-	integer max_edits = 1;
+	integer max_edits = 2;
 
 	benchmark<text>(corpus_path, method, max_edits);
 }
