@@ -100,7 +100,7 @@ LevenshteinDFA<text>::transition::transition(integer id, integer next, symbol la
 {}
 
 template<typename text>
-bool LevenshteinDFA<text>::transition::operator<(const transition& s) const
+inline bool LevenshteinDFA<text>::transition::operator<(const transition& s) const
 {
 	if(id != s.id)
 		return id < s.id;
@@ -147,58 +147,38 @@ constexpr const typename LevenshteinDFA<text>::symbol LevenshteinDFA<text>::null
 }
 
 template<typename text>
-bool LevenshteinDFA<text>::update(const symbol c)
+inline bool LevenshteinDFA<text>::update(const symbol c)
 {
-	// find c-transition
-	integer min = states[current_states.back()].start, max = states[current_states.back() + 1].start - 1;
-	while(max - min > 32){
-		integer mid = (min + max) / 2;
-		if(transitions[mid].label < c)
-			min = mid + 1;
-		else if(transitions[mid].label > c)
-			max = mid;
-		else{
-			current_states.push_back(transitions[mid].next);
-			goto UPDATE_DONE;
-		}
-	}
-	for(integer i = min; i < max; ++i){
-		if(transitions[i].label == c){
-			current_states.push_back(transitions[i].next);
-			goto UPDATE_DONE;
-		}
-	}
-	// *-transition
-	current_states.push_back(transitions[states[current_states.back() + 1].start - 1].next);
-UPDATE_DONE:
-	bool succeeded = distance() <= max_edits;
-	if(!succeeded)
-		back();
-
-	return succeeded;
+	integer current = states[current_states.back()].start, last = states[current_states.back() + 1].start - 1;
+	for(; current < last && transitions[current].label < c; ++current);
+	current = transitions[transitions[current].label == c ? current : last].next;
+	bool updatable = states[current].edits <= max_edits;
+	if(updatable)
+		current_states.push_back(current);
+	return updatable;
 }
 
 template<typename text>
-bool LevenshteinDFA<text>::matched() const
+inline bool LevenshteinDFA<text>::matched() const
 {
 	return states[current_states.back()].match;
 }
 
 template<typename text>
-void LevenshteinDFA<text>::back()
+inline void LevenshteinDFA<text>::back()
 {
 	if(current_states.size() > 1)
 		current_states.pop_back();
 }
 
 template<typename text>
-typename LevenshteinDFA<text>::integer LevenshteinDFA<text>::max_distance() const
+inline typename LevenshteinDFA<text>::integer LevenshteinDFA<text>::max_distance() const
 {
 	return max_edits;
 }
 
 template<typename text>
-typename LevenshteinDFA<text>::integer LevenshteinDFA<text>::distance()
+inline typename LevenshteinDFA<text>::integer LevenshteinDFA<text>::distance()
 {
 	return states[current_states.back()].edits;
 }
