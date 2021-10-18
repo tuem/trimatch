@@ -20,8 +20,6 @@ limitations under the License.
 #ifndef TRIMATCH_SEARCHER_HPP
 #define TRIMATCH_SEARCHER_HPP
 
-#include <vector>
-
 namespace trimatch
 {
 
@@ -38,16 +36,16 @@ public:
 
 	bool exact(const text& query) const;
 	predictive_search_result_iterator predict(const text& query);
-	template<class approximate_matcher>
-	void approx(approximate_matcher& matcher, std::vector<approximate_search_result>& results);
+	template<class approximate_matcher, class back_insert_iterator>
+	void approx(approximate_matcher& matcher, back_insert_iterator bi);
 
 private:
 	const trie& T;
 	typename trie::common_searcher trie_searcher;
 
-	template<class approximate_matcher>
+	template<class approximate_matcher, class back_insert_iterator>
 	void approx_step(approximate_matcher& matcher,
-		integer node_id, text& current, std::vector<std::pair<text, integer>>& results);
+		integer node_id, text& current, back_insert_iterator& bi);
 };
 
 
@@ -70,18 +68,18 @@ searcher<text, integer, trie>::predict(const text& query)
 }
 
 template<class text, class integer, class trie>
-template<class approximate_matcher>
+template<class approximate_matcher, class back_insert_iterator>
 void searcher<text, integer, trie>::approx(
-	approximate_matcher& matcher, std::vector<std::pair<text, integer>>& results)
+	approximate_matcher& matcher, back_insert_iterator bi)
 {
 	text current;
-	approx_step(matcher, 0, current, results);
+	approx_step(matcher, 0, current, bi);
 }
 
 template<class text, class integer, class trie>
-template<class approximate_matcher>
+template<class approximate_matcher, class back_insert_iterator>
 void searcher<text, integer, trie>::approx_step(
-	approximate_matcher& matcher, integer node_id, text& current, std::vector<std::pair<text, integer>>& results)
+	approximate_matcher& matcher, integer node_id, text& current, back_insert_iterator& bi)
 {
 	// TODO: for(const auto& u: T.children(n)){...
 	for(integer i = T.data[node_id].next; i < T.data[T.data[node_id].next].next; ++i){
@@ -89,9 +87,9 @@ void searcher<text, integer, trie>::approx_step(
 			current.push_back(T.data[i].label);
 			// LevenshteinDFA may return incorrect distance
 			if(T.data[i].match && matcher.matched())
-				results.push_back(std::make_pair(current, matcher.distance()));
+				*bi++ = std::make_pair(current, matcher.distance());
 			if(!T.data[i].leaf)
-				approx_step(matcher, i, current, results);
+				approx_step(matcher, i, current, bi);
 			current.pop_back();
 			matcher.back();
 		}

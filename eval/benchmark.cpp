@@ -64,7 +64,7 @@ size_t exec_approx_dp_trie(const sftrie::set<text, integer>& index,
 	std::vector<std::pair<text, integer>> results;
 	for(const auto& query: queries){
 		OnlineEditDistance<text> ed(query, max_edits);
-		searcher.approx(ed, results);
+		searcher.approx(ed, std::back_inserter(results));
 		found += results.size();
 		results.clear();
 	}
@@ -95,7 +95,7 @@ size_t exec_approx_dfa_trie(const sftrie::set<text, integer>& index,
 	std::vector<std::pair<text, integer>> results;
 	for(const auto& query: queries){
 		trimatch::LevenshteinDFA<text> dfa(query, max_edits);
-		searcher.approx(dfa, results);
+		searcher.approx(dfa, std::back_inserter(results));
 		found += results.size();
 		results.clear();
 	}
