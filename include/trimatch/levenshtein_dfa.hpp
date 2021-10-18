@@ -150,7 +150,7 @@ inline bool LevenshteinDFA<text>::update(const symbol c)
 		m = w >> 1;
 		current += transitions[current + m].label < c ? w - m : 0;
 	}
-	// linear searchsearch
+	// linear search
 	for(; current < last && transitions[current].label < c; ++current);
 
 	current = transitions[transitions[current].label == c ? current : last].next;

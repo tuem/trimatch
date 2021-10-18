@@ -45,7 +45,7 @@ private:
 
 	template<class approximate_matcher, class back_insert_iterator>
 	void approx_step(approximate_matcher& matcher,
-		integer node_id, text& current, back_insert_iterator& bi);
+		integer root, text& current, back_insert_iterator& bi);
 };
 
 
@@ -79,17 +79,19 @@ void searcher<text, integer, trie>::approx(
 template<class text, class integer, class trie>
 template<class approximate_matcher, class back_insert_iterator>
 void searcher<text, integer, trie>::approx_step(
-	approximate_matcher& matcher, integer node_id, text& current, back_insert_iterator& bi)
+	approximate_matcher& matcher, integer root, text& current, back_insert_iterator& bi)
 {
+	if(T.data[root].match && matcher.matched()){
+		// LevenshteinDFA may return incorrect distance
+		*bi++ = std::make_pair(current, matcher.distance());
+	}
+	if(T.data[root].leaf)
+		return;
 	// TODO: for(const auto& u: T.children(n)){...
-	for(integer i = T.data[node_id].next; i < T.data[T.data[node_id].next].next; ++i){
+	for(integer i = T.data[root].next; i < T.data[T.data[root].next].next; ++i){
 		if(matcher.update(T.data[i].label)){
 			current.push_back(T.data[i].label);
-			// LevenshteinDFA may return incorrect distance
-			if(T.data[i].match && matcher.matched())
-				*bi++ = std::make_pair(current, matcher.distance());
-			if(!T.data[i].leaf)
-				approx_step(matcher, i, current, bi);
+			approx_step(matcher, i, current, bi);
 			current.pop_back();
 			matcher.back();
 		}
