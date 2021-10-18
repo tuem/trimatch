@@ -43,9 +43,9 @@ public:
 	searcher(const trie& T);
 
 	bool exact(const text& query) const;
-	predictive_search_result_iterator predict(const text& query);
+	predictive_search_result_iterator predict(const text& query) const;
 	template<class back_insert_iterator>
-	void approx(const text& query, back_insert_iterator bi, integer max_edits = 1);
+	void approx(const text& query, back_insert_iterator bi, integer max_edits = 1) const;
 
 private:
 	const trie& T;
@@ -53,7 +53,7 @@ private:
 
 	template<class back_insert_iterator>
 	void approx_step(approximate_matcher& matcher,
-		integer root, text& current, back_insert_iterator& bi);
+		integer root, text& current, back_insert_iterator& bi) const;
 };
 
 
@@ -70,7 +70,7 @@ bool searcher<text, integer, trie, approximate_matcher>::exact(const text& query
 
 template<class text, class integer, class trie, class approximate_matcher>
 typename searcher<text, integer, trie, approximate_matcher>::predictive_search_result_iterator
-searcher<text, integer, trie, approximate_matcher>::predict(const text& query)
+searcher<text, integer, trie, approximate_matcher>::predict(const text& query) const
 {
 	return trie_searcher.traverse(query);
 }
@@ -78,7 +78,7 @@ searcher<text, integer, trie, approximate_matcher>::predict(const text& query)
 template<class text, class integer, class trie, class approximate_matcher>
 template<class back_insert_iterator>
 void searcher<text, integer, trie, approximate_matcher>::approx(
-	const text& query, back_insert_iterator bi, integer max_edits)
+	const text& query, back_insert_iterator bi, integer max_edits) const
 {
 	approximate_matcher matcher(query, max_edits);
 	text current;
@@ -88,7 +88,7 @@ void searcher<text, integer, trie, approximate_matcher>::approx(
 template<class text, class integer, class trie, class approximate_matcher>
 template<class back_insert_iterator>
 void searcher<text, integer, trie, approximate_matcher>::approx_step(
-	approximate_matcher& matcher, integer root, text& current, back_insert_iterator& bi)
+	approximate_matcher& matcher, integer root, text& current, back_insert_iterator& bi) const
 {
 	if(T.data[root].match && matcher.matched()){
 		// LevenshteinDFA may return incorrect distance
