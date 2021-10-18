@@ -57,7 +57,7 @@ public:
 	bool matched() const;
 	void back();
 	integer max_distance() const;
-	integer distance();
+	integer distance() const;
 
 private:
 	std::vector<state> states;
@@ -189,7 +189,7 @@ inline typename LevenshteinDFA<text>::integer LevenshteinDFA<text>::max_distance
 }
 
 template<typename text>
-inline typename LevenshteinDFA<text>::integer LevenshteinDFA<text>::distance()
+inline typename LevenshteinDFA<text>::integer LevenshteinDFA<text>::distance() const
 {
 	return states[current_states.back()].edits;
 }

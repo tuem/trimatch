@@ -43,7 +43,7 @@ public:
 	template<typename iterator>
 	index(iterator begin, iterator end);
 
-	searcher_type searcher();
+	searcher_type searcher() const;
 
 private:
 	const trie T;
@@ -56,7 +56,7 @@ index<text, integer, trie, approximate_matcher>::index(iterator begin, iterator 
 
 template<class text, class integer, class trie, class approximate_matcher>
 typename index<text, integer, trie, approximate_matcher>::searcher_type
-index<text, integer, trie, approximate_matcher>::searcher()
+index<text, integer, trie, approximate_matcher>::searcher() const
 {
 	return searcher_type(T);
 }
