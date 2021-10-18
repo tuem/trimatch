@@ -27,7 +27,9 @@ namespace trimatch
 {
 
 // (exact|predictive|approximate) searcher
-template<class text, class integer,
+template<
+	class text,
+	class integer,
 	class trie = sftrie::set<text, integer>,
 	class approximate_matcher = LevenshteinDFA<text>
 >

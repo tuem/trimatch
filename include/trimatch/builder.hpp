@@ -20,24 +20,26 @@ limitations under the License.
 #ifndef TRIMATCH_BUILDER_HPP
 #define TRIMATCH_BUILDER_HPP
 
-#include <vector>
-
 #include "builder.hpp"
-// use modified version to access internal data
 // TODO: update original sftrie
+// currently we use a modified version of sftrie to access internal data
 #include "sftrie.hpp"
+#include "levenshtein_dfa.hpp"
 
 namespace trimatch
 {
 
 // helper function
-template<class iterator,
+template<
+	class iterator,
 	class text = typename iterator::value_type,
 	class integer = typename text::size_type,
-	class trie = sftrie::set<text, integer>>
+	class trie = sftrie::set<text, integer>,
+	class approximate_matcher = LevenshteinDFA<text>
+>
 index<text, integer, trie> build(iterator begin, iterator end)
 {
-	return index<text, integer, trie>(begin, end);
+	return index<text, integer, trie, approximate_matcher>(begin, end);
 }
 
 }
