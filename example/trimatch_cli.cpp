@@ -28,6 +28,7 @@ limitations under the License.
 using text = std::string;
 using integer = text::size_type;
 
+
 int main(int argc, char* argv[])
 {
 	if(argc < 2){
@@ -36,9 +37,12 @@ int main(int argc, char* argv[])
 	}
 
 	std::string corpus_path = argv[1];
-	std::cerr << "loading...";
+	int max_edits = 3;
+
 	std::vector<text> texts;
 	std::ifstream ifs(corpus_path);
+
+	std::cerr << "loading...";
 	if(!ifs.is_open()){
 		std::cerr << "input file is not available: " << corpus_path << std::endl;
 		return 1;
@@ -50,16 +54,11 @@ int main(int argc, char* argv[])
 			break;
 		texts.push_back(line);
 	}
-
 	sftrie::sort_texts(std::begin(texts), std::end(texts));
 	std::cerr << "done." << std::endl;
 
 	auto index = trimatch::build(std::begin(texts), std::end(texts));
-	texts.clear();
-	texts.shrink_to_fit();
-
 	auto searcher = index.searcher();
-	int max_edits = 3;
 	while(true){
 		std::cerr << "> ";
 		std::string query;
@@ -67,16 +66,16 @@ int main(int argc, char* argv[])
 		if(std::cin.eof() || query == "exit" || query == "quit" || query == "bye")
 			break;
 
-		auto back = query.back();
-		if(back == '*' || back == '?')
+		auto last = query.back();
+		if(last == '*' || last == '?')
 			query.pop_back();
 		integer count = 0;
-		if(back == '*'){
+		if(last == '*'){
 			// predictive search
 			for(const auto& t: searcher.predict(query))
 				std::cout << std::setw(4) << ++count << ": " << t << std::endl;
 		}
-		else if(back == '?'){
+		else if(last == '?'){
 			// approximate search
 			std::vector<std::pair<text, integer>> results;
 			searcher.approx(query, std::back_inserter(results), max_edits);
