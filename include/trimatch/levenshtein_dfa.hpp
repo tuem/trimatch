@@ -66,7 +66,6 @@ private:
 	std::vector<transition> transitions;
 
 	std::vector<integer> current_states;
-	text current_text;
 
 	integer explore(const LevenshteinNFA<text>& nfa,
 		const std::vector<nfa_state>& nfa_states, const std::set<symbol>& nfa_transitions,
@@ -145,7 +144,6 @@ constexpr const typename LevenshteinDFA<text>::symbol LevenshteinDFA<text>::null
 template<typename text>
 bool LevenshteinDFA<text>::update(const symbol c)
 {
-	current_text.push_back(c);
 	// TODO: switch to binary search if there are many transitions
 	for(integer i = states[current_states.back()].start; i < states[current_states.back() + 1].start - 1; ++i){
 		if(transitions[i].label == c){
@@ -172,10 +170,8 @@ bool LevenshteinDFA<text>::matched() const
 template<typename text>
 void LevenshteinDFA<text>::back()
 {
-	if(!current_text.empty()){
-		current_text.pop_back();
+	if(!current_states.size() > 1)
 		current_states.pop_back();
-	}
 }
 
 template<typename text>
