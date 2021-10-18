@@ -22,8 +22,8 @@ limitations under the License.
 	https://julesjacobs.com/2015/06/17/disqus-levenshtein-simple-and-fast.html
 */
 
-#ifndef TRIMATCH_LEVENSHTEIN_DFA_HPP
-#define TRIMATCH_LEVENSHTEIN_DFA_HPP
+#ifndef TRIMATCH_LEVENSHTEIN_DFA
+#define TRIMATCH_LEVENSHTEIN_DFA
 
 #include <vector>
 #include <set>

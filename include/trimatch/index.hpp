@@ -17,8 +17,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef TRIMATCH_INDEX_HPP
-#define TRIMATCH_INDEX_HPP
+#ifndef TRIMATCH_INDEX
+#define TRIMATCH_INDEX
 
 #include <vector>
 

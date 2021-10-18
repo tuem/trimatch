@@ -17,14 +17,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef TRIMATCH_BUILDER_HPP
-#define TRIMATCH_BUILDER_HPP
+#ifndef TRIMATCH
+#define TRIMATCH
 
-#include "builder.hpp"
 // TODO: update original sftrie
 // currently we use a modified version of sftrie to access internal data
 #include "sftrie.hpp"
 #include "levenshtein_dfa.hpp"
+#include "index.hpp"
+#include "searcher.hpp"
 
 namespace trimatch
 {

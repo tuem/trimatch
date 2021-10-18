@@ -27,7 +27,7 @@ limitations under the License.
 #include <random>
 #include <chrono>
 
-#include <trimatch/trimatch.hpp>
+#include <trimatch/searcher.hpp>
 
 #include "competitors/edit_distance_dp.hpp"
 #include "competitors/online_edit_distance_dp.hpp"
@@ -37,8 +37,8 @@ limitations under the License.
 #include "history.hpp"
 
 
-using symbol = char32_t;
-using text = std::basic_string<symbol>;
+using text = std::u32string;
+using symbol = typename text::value_type;
 using integer = typename text::size_type;
 
 
