@@ -68,24 +68,25 @@ int main(int argc, char* argv[])
 			break;
 
 		auto back = query.back();
+		if(back == '*' || back == '?')
+			query.pop_back();
 		integer count = 0;
-		if(back != '*' && back != '?'){
-			if((count = searcher.exact(query) ? 1 : 0) > 0)
-				std::cout << query << ": found" << std::endl;
+		if(back == '*'){
+			// predictive search
+			for(const auto& t: searcher.predict(query))
+				std::cout << std::setw(4) << ++count << ": " << t << std::endl;
+		}
+		else if(back == '?'){
+			// approximate search
+			std::vector<std::pair<text, integer>> results;
+			searcher.approx(query, std::back_inserter(results), max_edits);
+			for(const auto& r: results)
+				std::cout << std::setw(4) << ++count << ": " << r.first << ", distance=" << r.second << std::endl;
 		}
 		else{
-			query.pop_back();
-			if(back == '*'){
-				for(const auto& t: searcher.predict(query))
-					std::cout << std::setw(4) << ++count << ": " << t << std::endl;
-			}
-			else if(back == '?'){
-				std::vector<std::pair<text, integer>> results;
-				trimatch::LevenshteinDFA<text> dfa(query, max_edits);
-				searcher.approx(dfa, results);
-				for(const auto& r: results)
-					std::cout << std::setw(4) << ++count << ": " << r.first << ", distance=" << r.second << std::endl;
-			}
+			// exact match
+			if((count = searcher.exact(query) ? 1 : 0) > 0)
+				std::cout << query << ": found" << std::endl;
 		}
 		if(count == 0)
 			std::cout << query << ": " << "not found" << std::endl;
