@@ -193,7 +193,7 @@ bool LevenshteinDFA<text>::matched() const
 template<typename text>
 void LevenshteinDFA<text>::back()
 {
-	if(!current_states.size() > 1)
+	if(current_states.size() > 1)
 		current_states.pop_back();
 }
 
