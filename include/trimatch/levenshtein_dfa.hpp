@@ -145,7 +145,7 @@ template<typename text>
 inline bool LevenshteinDFA<text>::update(const symbol c)
 {
 	integer current = states[current_states.back()].start, last = states[current_states.back() + 1].start - 1;
-	for(; current < last && transitions[current].label < c; ++current);
+	for(; current < last && c < transitions[current].label; ++current);
 	current = transitions[transitions[current].label == c ? current : last].next;
 	bool updatable = states[current].edits <= max_edits;
 	if(updatable)
