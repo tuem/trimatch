@@ -28,8 +28,10 @@ limitations under the License.
 #include <vector>
 #include <set>
 #include <map>
+#include <unordered_map>
 
 #include "levenshtein_nfa.hpp"
+#include "pair_hash.hpp"
 
 namespace trimatch
 {
@@ -64,6 +66,7 @@ public:
 private:
 	std::vector<state> states;
 	std::vector<transition> transitions;
+	std::unordered_map<std::pair<integer, symbol>, integer, pair_hash> transition_map;
 
 	std::vector<integer> current_states;
 
@@ -76,6 +79,7 @@ template<typename text>
 struct LevenshteinDFA<text>::state
 {
 	integer start;
+	integer failure;
 	bool match;
 	integer position;
 	integer edits;
@@ -120,11 +124,18 @@ LevenshteinDFA<text>::LevenshteinDFA(const LevenshteinNFA<text>& nfa):
 	states.resize(counter);
 
 	std::sort(transitions.begin(), transitions.end());
-	for(integer i = 0; i < transitions.size(); ++i)
+	for(integer i = 0; i < transitions.size(); ++i){
 		if(i == 0 || transitions[i - 1].id < transitions[i].id)
 			states[transitions[i].id].start = i;
+		if(transitions[i].label == nullchar())
+			states[transitions[i].id].failure = transitions[i].next;
+	}
 	// sentinel
-	states.push_back({transitions.size(), false, pattern.size(), max_edits + 1});
+	states.push_back({transitions.size(), 0, false, pattern.size(), max_edits + 1});
+
+	transition_map.reserve(transitions.size() * 64);
+	for(const auto& t: transitions)
+		transition_map[std::make_pair(t.id, t.label)] = t.next;
 
 	// initial state
 	current_states.push_back(0);
@@ -144,8 +155,20 @@ constexpr const typename LevenshteinDFA<text>::symbol LevenshteinDFA<text>::null
 template<typename text>
 bool LevenshteinDFA<text>::update(const symbol c)
 {
-	// TODO: switch to binary search if there are many transitions
-	for(integer i = states[current_states.back()].start; i < states[current_states.back() + 1].start - 1; ++i){
+	// find c-transition
+	integer min = states[current_states.back()].start, max = states[current_states.back() + 1].start - 1;
+	while(max - min > 32){
+		integer mid = (min + max) / 2;
+		if(transitions[mid].label < c)
+			min = mid + 1;
+		else if(transitions[mid].label > c)
+			max = mid;
+		else{
+			current_states.push_back(transitions[mid].next);
+			goto UPDATE_DONE;
+		}
+	}
+	for(integer i = min; i < max; ++i){
 		if(transitions[i].label == c){
 			current_states.push_back(transitions[i].next);
 			goto UPDATE_DONE;
@@ -229,7 +252,7 @@ LevenshteinDFA<text>::explore(const LevenshteinNFA<text>& nfa,
 			best_edits = s.second;
 		}
 	}
-	states.push_back({current_node_id, nfa.is_match(nfa_states), position, best_edits}); // current_node_id is a placeholder
+	states.push_back({current_node_id, 0, nfa.is_match(nfa_states), position, best_edits}); // current_node_id is a placeholder
 
 	// *-transition
 	auto new_nfa_states = nfa.step(nfa_states, nullchar());
