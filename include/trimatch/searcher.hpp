@@ -24,7 +24,7 @@ namespace trimatch
 {
 
 // (exact|predictive|approximate) searcher
-template<class text, class integer, class trie>
+template<class text, class integer, class trie, class approximate_matcher>
 class searcher
 {
 public:
@@ -36,49 +36,50 @@ public:
 
 	bool exact(const text& query) const;
 	predictive_search_result_iterator predict(const text& query);
-	template<class approximate_matcher, class back_insert_iterator>
-	void approx(approximate_matcher& matcher, back_insert_iterator bi);
+	template<class back_insert_iterator>
+	void approx(const text& query, back_insert_iterator bi, integer max_edits = 1);
 
 private:
 	const trie& T;
 	typename trie::common_searcher trie_searcher;
 
-	template<class approximate_matcher, class back_insert_iterator>
+	template<class back_insert_iterator>
 	void approx_step(approximate_matcher& matcher,
 		integer root, text& current, back_insert_iterator& bi);
 };
 
 
-template<class text, class integer, class trie>
-searcher<text, integer, trie>::searcher(const trie& T):
+template<class text, class integer, class trie, class approximate_matcher>
+searcher<text, integer, trie, approximate_matcher>::searcher(const trie& T):
 	T(T), trie_searcher(T.searcher())
 {}
 
-template<class text, class integer, class trie>
-bool searcher<text, integer, trie>::exact(const text& query) const
+template<class text, class integer, class trie, class approximate_matcher>
+bool searcher<text, integer, trie, approximate_matcher>::exact(const text& query) const
 {
 	return T.exists(query);
 }
 
-template<class text, class integer, class trie>
-typename searcher<text, integer, trie>::predictive_search_result_iterator
-searcher<text, integer, trie>::predict(const text& query)
+template<class text, class integer, class trie, class approximate_matcher>
+typename searcher<text, integer, trie, approximate_matcher>::predictive_search_result_iterator
+searcher<text, integer, trie, approximate_matcher>::predict(const text& query)
 {
 	return trie_searcher.traverse(query);
 }
 
-template<class text, class integer, class trie>
-template<class approximate_matcher, class back_insert_iterator>
-void searcher<text, integer, trie>::approx(
-	approximate_matcher& matcher, back_insert_iterator bi)
+template<class text, class integer, class trie, class approximate_matcher>
+template<class back_insert_iterator>
+void searcher<text, integer, trie, approximate_matcher>::approx(
+	const text& query, back_insert_iterator bi, integer max_edits)
 {
+	approximate_matcher matcher(query, max_edits);
 	text current;
 	approx_step(matcher, 0, current, bi);
 }
 
-template<class text, class integer, class trie>
-template<class approximate_matcher, class back_insert_iterator>
-void searcher<text, integer, trie>::approx_step(
+template<class text, class integer, class trie, class approximate_matcher>
+template<class back_insert_iterator>
+void searcher<text, integer, trie, approximate_matcher>::approx_step(
 	approximate_matcher& matcher, integer root, text& current, back_insert_iterator& bi)
 {
 	if(T.data[root].match && matcher.matched()){

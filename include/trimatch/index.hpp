@@ -23,15 +23,16 @@ limitations under the License.
 #include <vector>
 
 #include "searcher.hpp"
+#include "levenshtein_dfa.hpp"
 
 namespace trimatch
 {
 
-template<class text, class integer, class trie>
+template<class text, class integer, class trie, class approximate_matcher = LevenshteinDFA<text>>
 class index
 {
 public:
-	using searcher_type = searcher<text, integer, trie>;
+	using searcher_type = searcher<text, integer, trie, approximate_matcher>;
 
 	template<typename iterator>
 	index(iterator begin, iterator end);
@@ -42,16 +43,16 @@ private:
 	const trie T;
 };
 
-template<class text, class integer, class trie>
+template<class text, class integer, class trie, class approximate_matcher>
 template<class iterator>
-index<text, integer, trie>::index(iterator begin, iterator end): T(begin, end)
+index<text, integer, trie, approximate_matcher>::index(iterator begin, iterator end): T(begin, end)
 {}
 
-template<class text, class integer, class trie>
-typename index<text, integer, trie>::searcher_type
-index<text, integer, trie>::searcher()
+template<class text, class integer, class trie, class approximate_matcher>
+typename index<text, integer, trie, approximate_matcher>::searcher_type
+index<text, integer, trie, approximate_matcher>::searcher()
 {
-	return trimatch::searcher<text, integer, trie>(T);
+	return searcher_type(T);
 }
 
 }
