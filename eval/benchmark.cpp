@@ -90,7 +90,7 @@ size_t exec_approx_dfa_trie(const sftrie::set<text, integer>& index,
 	const std::vector<text>& queries, integer max_edits = 1)
 {
 	size_t found = 0;
-	trimatch::searcher<text, integer, sftrie::set<text, integer>> searcher(index);
+	trimatch::searcher<text, integer> searcher(index);
 	std::vector<std::pair<text, integer>> results;
 	for(const auto& query: queries){
 		searcher.approx(query, std::back_inserter(results), max_edits);

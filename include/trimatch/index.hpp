@@ -23,12 +23,16 @@ limitations under the License.
 #include <vector>
 
 #include "searcher.hpp"
+#include "sftrie.hpp"
 #include "levenshtein_dfa.hpp"
 
 namespace trimatch
 {
 
-template<class text, class integer, class trie, class approximate_matcher = LevenshteinDFA<text>>
+template<class text, class integer,
+	class trie = sftrie::set<text, integer>,
+	class approximate_matcher = LevenshteinDFA<text>
+>
 class index
 {
 public:

@@ -20,11 +20,17 @@ limitations under the License.
 #ifndef TRIMATCH_SEARCHER_HPP
 #define TRIMATCH_SEARCHER_HPP
 
+#include "sftrie.hpp"
+#include "levenshtein_dfa.hpp"
+
 namespace trimatch
 {
 
 // (exact|predictive|approximate) searcher
-template<class text, class integer, class trie, class approximate_matcher>
+template<class text, class integer,
+	class trie = sftrie::set<text, integer>,
+	class approximate_matcher = LevenshteinDFA<text>
+>
 class searcher
 {
 public:
