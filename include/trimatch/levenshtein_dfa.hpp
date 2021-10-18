@@ -31,7 +31,6 @@ limitations under the License.
 #include <unordered_map>
 
 #include "levenshtein_nfa.hpp"
-#include "pair_hash.hpp"
 
 namespace trimatch
 {
@@ -66,7 +65,6 @@ public:
 private:
 	std::vector<state> states;
 	std::vector<transition> transitions;
-	std::unordered_map<std::pair<integer, symbol>, integer, pair_hash> transition_map;
 
 	std::vector<integer> current_states;
 
@@ -132,10 +130,6 @@ LevenshteinDFA<text>::LevenshteinDFA(const LevenshteinNFA<text>& nfa):
 	}
 	// sentinel
 	states.push_back({transitions.size(), 0, false, pattern.size(), max_edits + 1});
-
-	transition_map.reserve(transitions.size() * 64);
-	for(const auto& t: transitions)
-		transition_map[std::make_pair(t.id, t.label)] = t.next;
 
 	// initial state
 	current_states.push_back(0);
