@@ -206,26 +206,26 @@ LevenshteinDFA<text>::convert(const LevenshteinNFA<text>& nfa,
 	if(p != dfa_states.end())
 		return p->second;
 
-	integer current_node_id = counter++;
-	dfa_states.insert(p, std::make_pair(nfa_states, current_node_id));
+	integer created_state = counter++;
+	dfa_states.insert(p, std::make_pair(nfa_states, created_state));
 
 	integer edits = !nfa_states.empty() ? nfa_states.back().second : max_edits + 1;
-	states.emplace_back(current_node_id, nfa.is_match(nfa_states), edits); // current_node_id is a placeholder
+	states.emplace_back(0, nfa.is_match(nfa_states), edits); // state.start will be updated later
 
 	// *-transition
 	auto new_nfa_states = nfa.step(nfa_states, nullchar());
 	auto next0 = convert(nfa, new_nfa_states, nfa_transitions, dfa_states, counter);
-	transitions.emplace_back(current_node_id, next0, nullchar());
+	transitions.emplace_back(created_state, next0, nullchar());
 
 	// check other transitions with symbols in the pattern
 	for(auto label: nfa_transitions){
 		auto new_nfa_states = nfa.step(nfa_states, label);
 		auto next = convert(nfa, new_nfa_states, nfa_transitions, dfa_states, counter);
 		if(next != next0)
-			transitions.emplace_back(current_node_id, next, label);
+			transitions.emplace_back(created_state, next, label);
 	}
 
-	return current_node_id;
+	return created_state;
 }
 
 }
