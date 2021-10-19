@@ -45,7 +45,7 @@ public:
 	using searcher_type = searcher<text, integer, trie, approximate_matcher>;
 
 	template<typename random_access_iterator>
-	index(random_access_iterator begin, iterator end);
+	index(random_access_iterator begin, random_access_iterator end);
 
 	searcher_type searcher() const;
 

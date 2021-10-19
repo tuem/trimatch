@@ -48,6 +48,8 @@ public:
 	bool exact(const text& query) const;
 	predictive_search_result_iterator predict(const text& query);
 	template<class back_insert_iterator>
+	void predict(const text& query, back_insert_iterator bi) const;
+	template<class back_insert_iterator>
 	void approx(const text& query, back_insert_iterator bi, integer max_edits = 1) const;
 	// TODO: approximate_search_iterator approx
 	// TODO: void approx_predict
@@ -79,6 +81,16 @@ typename searcher<text, integer, trie, approximate_matcher>::predictive_search_r
 searcher<text, integer, trie, approximate_matcher>::predict(const text& query)
 {
 	return trie_searcher.traverse(query);
+}
+
+template<class text, class integer, class trie, class approximate_matcher>
+template<class back_insert_iterator>
+void searcher<text, integer, trie, approximate_matcher>::predict(
+	const text& query, back_insert_iterator bi) const
+{
+	typename trie::common_searcher searcher(T);
+	for(const auto& r: searcher.traverse(query))
+		*bi++ = r;
 }
 
 template<class text, class integer, class trie, class approximate_matcher>
