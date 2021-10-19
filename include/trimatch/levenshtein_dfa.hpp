@@ -40,7 +40,6 @@ class LevenshteinDFA
 public:
 	using symbol = typename text::value_type;
 	using integer = typename text::size_type;
-	using nfa_state = typename LevenshteinNFA<text>::state;
 
 	struct state;
 	struct transition;
@@ -60,6 +59,8 @@ public:
 	integer distance() const;
 
 private:
+	using nfa_state = typename LevenshteinNFA<text>::state;
+
 	std::vector<state> states;
 	std::vector<transition> transitions;
 
@@ -208,11 +209,8 @@ LevenshteinDFA<text>::convert(const LevenshteinNFA<text>& nfa,
 	integer current_node_id = counter++;
 	dfa_states.insert(p, std::make_pair(nfa_states, current_node_id));
 
-	integer best_edits = max_edits + 1;
-	for(const auto& s: nfa_states)
-		if(s.second < best_edits)
-			best_edits = s.second;
-	states.emplace_back(current_node_id, nfa.is_match(nfa_states), best_edits); // current_node_id is a placeholder
+	integer edits = !nfa_states.empty() ? nfa_states.back().second : max_edits + 1;
+	states.emplace_back(current_node_id, nfa.is_match(nfa_states), edits); // current_node_id is a placeholder
 
 	// *-transition
 	auto new_nfa_states = nfa.step(nfa_states, nullchar());
