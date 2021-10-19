@@ -246,12 +246,13 @@ public:
 		return results;
 	}
 
-	void operator()(const std::vector<string_type>& candidates, distance_type max, std::vector<std::pair<string_type, size_type>>& results)
+	template<class back_insert_iterator>
+	void operator()(const std::vector<string_type>& candidates, distance_type max, back_insert_iterator bi)
 	{
 		for(const auto& c: candidates){
 			auto d = distance(c);
 			if(d <= max)
-				results.push_back(std::make_pair(c, d));
+				*bi++ = std::make_pair(c, d);
 		}
 	}
 
