@@ -1,4 +1,4 @@
-# trimatch: An (Exact|Predictive|Approximate) String Matching Library
+# Trimatch: An (Exact|Predictive|Approximate) String Matching Library
 
 ## Usage
 ```c++
