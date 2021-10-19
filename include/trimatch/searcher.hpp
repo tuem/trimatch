@@ -112,6 +112,7 @@ void searcher<text, integer, trie, approximate_matcher>::approx_step(
 		*bi++ = std::make_pair(current, matcher.distance());
 	if(T.data[root].leaf)
 		return;
+	// TODO: we only need to do the exact matching process if distance() == max_distance()
 	// TODO: for(const auto& u: T.children(n)){...
 	for(integer i = T.data[root].next; i < T.data[T.data[root].next].next; ++i){
 		if(matcher.update(T.data[i].label)){
