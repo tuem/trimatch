@@ -1,1 +1,5 @@
 benchmark
+validate
+
+*.txt
+*.tsv
