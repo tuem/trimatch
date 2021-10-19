@@ -93,10 +93,8 @@ template<class back_insert_iterator>
 void searcher<text, integer, trie, approximate_matcher>::approx_step(
 	approximate_matcher& matcher, integer root, text& current, back_insert_iterator& bi) const
 {
-	if(T.data[root].match && matcher.matched()){
-		// LevenshteinDFA may return incorrect distance
+	if(T.data[root].match && matcher.matched())
 		*bi++ = std::make_pair(current, matcher.distance());
-	}
 	if(T.data[root].leaf)
 		return;
 	// TODO: for(const auto& u: T.children(n)){...
