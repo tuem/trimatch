@@ -78,7 +78,7 @@ size_t exec_approx_bp(const std::vector<text>& texts,
 	std::vector<std::pair<text, integer>> results;
 	for(const auto& q: queries){
 		EditDistanceBP<text> ed(q);
-		ed(texts, max_edits, results);
+		ed(texts, max_edits, std::back_inserter(results));
 		found += results.size();
 		results.clear();
 	}
@@ -101,7 +101,7 @@ size_t exec_approx_dfa_trie(const sftrie::set<text, integer>& index,
 }
 
 template<typename text>
-bool benchmark(const std::string& corpus_path, const std::string& method, size_t max_edits)
+bool benchmark(const std::string& corpus_path, const std::string& algorithm, size_t max_edits)
 {
 	using symbol = typename text::value_type;
 
@@ -179,20 +179,20 @@ bool benchmark(const std::string& corpus_path, const std::string& method, size_t
 
 	std::cerr << "approximate search...";
 	history.refresh();
-	if(method == "dp"){
+	if(algorithm == "dp"){
 		found_approx = exec_approx_dp(texts, shuffled_queries, max_edits);
 	}
-	else if(method == "dp-trie"){
+	else if(algorithm == "dp-trie"){
 		found_approx = exec_approx_dp_trie(index, shuffled_queries, max_edits);
 	}
-	else if(method == "bp"){
+	else if(algorithm == "bp"){
 		found_approx = exec_approx_bp(texts, shuffled_queries, max_edits);
 	}
-	else if(method == "dfa-trie"){
+	else if(algorithm == "dfa-trie"){
 		found_approx = exec_approx_dfa_trie(index, shuffled_queries, max_edits);
 	}
 	else{
-		throw std::runtime_error("input file is not available: " + method);
+		throw std::runtime_error("input file is not available: " + algorithm);
 	}
 	history.record("approximate search", shuffled_queries.size());
 	std::cerr << "done." << std::endl;
@@ -228,15 +228,15 @@ bool benchmark(const std::string& corpus_path, const std::string& method, size_t
 
 int main(int argc, char* argv[])
 {
-	(void)argc;
-	(void)argv;
+	if(argc < 4){
+		std::cout << "usage: validate corpus_path algorithm max_edits" << std::endl;
+		std::cout << "  algorithm: (dp|bp|dp-trie|dfa-trie)" << std::endl;
+		return 0;
+	}
 
-	std::string corpus_path = "corpus.txt";
-	//std::string method = "dp";
-	//std::string method = "dp-trie";
-	//std::string method = "bp";
-	std::string method = "dfa-trie";
-	integer max_edits = 2;
+	std::string corpus_path = argv[1];
+	std::string algorithm= argv[2];
+	integer max_edits = std::atoi(argv[3]);
 
-	benchmark<text>(corpus_path, method, max_edits);
+	benchmark<text>(corpus_path, algorithm, max_edits);
 }
