@@ -32,12 +32,12 @@ using integer = text::size_type;
 int main(int argc, char* argv[])
 {
 	if(argc < 2){
-		std::cerr << "usage: " << argv[0] << " corpus" << std::endl;
+		std::cerr << "usage: " << argv[0] << " corpus_path [max_edits=1]" << std::endl;
 		return 0;
 	}
 
 	std::string corpus_path = argv[1];
-	int max_edits = 3;
+	int max_edits = argc >= 3 ? std::stoi(argv[2]) : 2;
 
 	std::vector<text> texts;
 	std::ifstream ifs(corpus_path);
