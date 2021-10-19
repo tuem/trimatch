@@ -19,12 +19,13 @@ public:
 	const integer max;
 
 	OnlineEditDistance(const text& pattern, integer max = 2):
-		pattern(pattern), max(max), D(pattern.size() + max + 2), i(0)
+		pattern(pattern), max(max), D(pattern.size() + max + 2), best(pattern.size() + max + 2), i(0)
 	{
 		for(auto& d: D)
 			d.resize(pattern.size() + 1);
 		for(integer j = 0; j < D[i].size(); ++j)
 			D[i][j] = j;
+		best[0] = 0;
 	}
 
 	bool update(const symbol c)
@@ -42,13 +43,24 @@ public:
 		}
 		if(min > max)
 			back();
+		best[i] = min;
 
 		return min <= max;
+	}
+
+	integer current_distance() const
+	{
+		return best[i];
 	}
 
 	integer distance() const
 	{
 		return D[i].back();
+	}
+
+	integer max_distance() const
+	{
+		return max;
 	}
 
 	bool matched() const
@@ -64,6 +76,7 @@ public:
 
 private:
 	std::vector<std::vector<integer>> D;
+	std::vector<integer> best;
 	integer i;
 };
 

@@ -56,6 +56,7 @@ public:
 	bool matched() const;
 	void back();
 	integer max_distance() const;
+	integer current_distance() const;
 	integer distance() const;
 
 private:
@@ -134,6 +135,7 @@ LevenshteinDFA<text>::LevenshteinDFA(const LevenshteinNFA<text>& nfa):
 			states[transitions[i].id].start = i;
 	// sentinel
 	states.emplace_back(transitions.size(), false, max_edits + 1);
+	states.front().edits = 0;
 
 	// initial state
 	current_states.push_back(0);
@@ -187,6 +189,12 @@ template<typename text>
 inline typename LevenshteinDFA<text>::integer LevenshteinDFA<text>::max_distance() const
 {
 	return max_edits;
+}
+
+template<typename text>
+inline typename LevenshteinDFA<text>::integer LevenshteinDFA<text>::current_distance() const
+{
+	return states[current_states.back()].edits;
 }
 
 template<typename text>
