@@ -44,8 +44,8 @@ class index
 public:
 	using searcher_type = searcher<text, integer, trie, approximate_matcher>;
 
-	template<typename iterator>
-	index(iterator begin, iterator end);
+	template<typename random_access_iterator>
+	index(random_access_iterator begin, iterator end);
 
 	searcher_type searcher() const;
 
@@ -54,8 +54,11 @@ private:
 };
 
 template<class text, class integer, class trie, class approximate_matcher>
-template<class iterator>
-index<text, integer, trie, approximate_matcher>::index(iterator begin, iterator end): T(begin, end)
+template<class random_access_iterator>
+index<text, integer, trie, approximate_matcher>::index(
+	random_access_iterator begin, random_access_iterator end
+):
+	T(begin, end)
 {}
 
 template<class text, class integer, class trie, class approximate_matcher>
