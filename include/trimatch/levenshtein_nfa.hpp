@@ -18,8 +18,8 @@ limitations under the License.
 */
 
 /*
-	Simple Levenshtein automata originally by Jules Jacobs
-	https://julesjacobs.com/2015/06/17/disqus-levenshtein-simple-and-fast.html
+Simple Levenshtein automata originally by Jules Jacobs
+https://julesjacobs.com/2015/06/17/disqus-levenshtein-simple-and-fast.html
 */
 
 #ifndef TRIMATCH_LEVENSHTEIN_NFA

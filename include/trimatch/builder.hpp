@@ -17,8 +17,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef TRIMATCH
-#define TRIMATCH
+/*
+Helper function for buinding indexes
+*/
+
+#ifndef TRIMATCH_BUILDER
+#define TRIMATCH_BUILDER
 
 // TODO: update original sftrie
 // currently we use a modified version of sftrie to access internal data
@@ -30,7 +34,6 @@ limitations under the License.
 namespace trimatch
 {
 
-// helper function
 template<
 	class iterator,
 	class text = typename iterator::value_type,

@@ -17,6 +17,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+/*
+Main interface for exact matching, predictive search and approximate search
+*/
+
 #ifndef TRIMATCH_SEARCHER
 #define TRIMATCH_SEARCHER
 
@@ -26,7 +30,6 @@ limitations under the License.
 namespace trimatch
 {
 
-// (exact|predictive|approximate) searcher
 template<
 	class text,
 	class integer,
