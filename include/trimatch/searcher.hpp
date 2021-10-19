@@ -41,7 +41,7 @@ class searcher
 public:
 	using predictive_search_result_iterator = typename trie::traversal_iterator;
 	using approximate_search_result = std::pair<text, integer>;
-	// TODO: class approximate_searxh_result_iterator;
+	// TODO: class approximate_search_iterator;
 
 	searcher(const trie& T);
 
@@ -49,6 +49,9 @@ public:
 	predictive_search_result_iterator predict(const text& query);
 	template<class back_insert_iterator>
 	void approx(const text& query, back_insert_iterator bi, integer max_edits = 1) const;
+	// TODO: approximate_search_iterator approx
+	// TODO: void approx_predict
+	// TODO: approximate_search_iterator approx_predict
 
 private:
 	const trie& T;
