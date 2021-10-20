@@ -108,15 +108,16 @@ template<class back_insert_iterator>
 void searcher<text, integer, trie, approximate_matcher>::approx_step(
 	approximate_matcher& matcher, integer root, text& current, back_insert_iterator& bi) const
 {
-	if(T.data[root].match && matcher.matched())
+	// TODO: use abstract interface
+	const auto& nodes = T.raw_data();
+	if(nodes[root].match && matcher.matched())
 		*bi++ = std::make_pair(current, matcher.distance());
-	if(T.data[root].leaf)
+	if(nodes[root].leaf)
 		return;
-	// TODO: we only need to do the exact matching process if distance() == max_distance()
-	// TODO: for(const auto& u: T.children(n)){...
-	for(integer i = T.data[root].next; i < T.data[T.data[root].next].next; ++i){
-		if(matcher.update(T.data[i].label)){
-			current.push_back(T.data[i].label);
+	// TODO: after distance() leaches max_distance(), all we need to do is the exact matching process
+	for(integer i = nodes[root].next; i < nodes[nodes[root].next].next; ++i){
+		if(matcher.update(nodes[i].label)){
+			current.push_back(nodes[i].label);
 			approx_step(matcher, i, current, bi);
 			current.pop_back();
 			matcher.back();

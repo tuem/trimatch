@@ -48,6 +48,7 @@ public:
 	std::size_t space() const;
 	bool exists(const text& pattern) const;
 	common_searcher searcher() const;
+	const std::vector<element>& raw_data() const;
 
 private:
 	const std::size_t num_texts;
@@ -122,6 +123,13 @@ typename set_basic<text, integer>::common_searcher
 set_basic<text, integer>::searcher() const
 {
 	return common_searcher(*this);
+}
+
+template<typename text, typename integer>
+const std::vector<typename set_basic<text, integer>::element>&
+set_basic<text, integer>::raw_data() const
+{
+	return data;
 }
 
 template<typename text, typename integer>
