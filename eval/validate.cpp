@@ -27,7 +27,7 @@ limitations under the License.
 #include <random>
 #include <chrono>
 
-#include <trimatch/searcher.hpp>
+#include <trimatch/index.hpp>
 
 #include "competitors/edit_distance_dp.hpp"
 #include "competitors/online_edit_distance_dp.hpp"
@@ -67,23 +67,6 @@ size_t exec_approx_dp(const std::vector<text>& texts,
 }
 
 template<typename text, typename integer>
-size_t exec_approx_dp_trie(const sftrie::set<text, integer>& index,
-	const std::vector<text>& queries, integer max_edits = 1)
-{
-	size_t found = 0;
-	trimatch::searcher<text, integer, sftrie::set<text, integer>, OnlineEditDistance<text>> searcher(index);
-	std::vector<std::pair<text, integer>> results;
-	for(const auto& q: queries){
-		searcher.approx(q, std::back_inserter(results), max_edits);
-		for(const auto& r: results)
-			output_result(q, r.first, r.second);
-		found += results.size();
-		results.clear();
-	}
-	return found;
-}
-
-template<typename text, typename integer>
 size_t exec_approx_bp(const std::vector<text>& texts,
 	const std::vector<text>& queries, integer max_edits = 1)
 {
@@ -101,12 +84,30 @@ size_t exec_approx_bp(const std::vector<text>& texts,
 }
 
 template<typename text, typename integer>
-size_t exec_approx_dfa_trie(const sftrie::set<text, integer>& index,
+size_t exec_approx_dp_trie(const sftrie::set<text, integer>& trie,
 	const std::vector<text>& queries, integer max_edits = 1)
 {
-	size_t found = 0;
-	trimatch::searcher<text, integer> searcher(index);
+	// since trie is already built, directly create search_client
+	typename trimatch::index<text, integer, sftrie::set<text, integer>, OnlineEditDistance<text>>::search_client searcher(trie);
 	std::vector<std::pair<text, integer>> results;
+	size_t found = 0;
+	for(const auto& q: queries){
+		searcher.approx(q, std::back_inserter(results), max_edits);
+		for(const auto& r: results)
+			output_result(q, r.first, r.second);
+		found += results.size();
+		results.clear();
+	}
+	return found;
+}
+
+template<typename text, typename integer>
+size_t exec_approx_dfa_trie(const sftrie::set<text, integer>& trie,
+	const std::vector<text>& queries, integer max_edits = 1)
+{
+	typename trimatch::index<text, integer>::search_client searcher(trie);
+	std::vector<std::pair<text, integer>> results;
+	size_t found = 0;
 	for(const auto& q: queries){
 		searcher.approx(q, std::back_inserter(results), max_edits);
 		for(const auto& r: results)

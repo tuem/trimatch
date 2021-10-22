@@ -26,7 +26,6 @@ Controller for tries and searchers
 
 #include <vector>
 
-#include "searcher.hpp"
 #include "sftrie.hpp"
 #include "levenshtein_dfa.hpp"
 
@@ -42,12 +41,12 @@ template<
 class index
 {
 public:
-	using searcher_type = searcher<text, integer, trie, approximate_matcher>;
+	class search_client;
 
 	template<typename random_access_iterator>
 	index(random_access_iterator begin, random_access_iterator end);
 
-	searcher_type searcher() const;
+	search_client searcher() const;
 
 private:
 	const trie T;
@@ -62,10 +61,10 @@ index<text, integer, trie, approximate_matcher>::index(
 {}
 
 template<class text, class integer, class trie, class approximate_matcher>
-typename index<text, integer, trie, approximate_matcher>::searcher_type
+typename index<text, integer, trie, approximate_matcher>::search_client
 index<text, integer, trie, approximate_matcher>::searcher() const
 {
-	return searcher_type(T);
+	return search_client(T);
 }
 
 
@@ -85,5 +84,7 @@ index<text, integer, trie> build(random_access_iterator begin, random_access_ite
 }
 
 }
+
+#include "searcher.hpp"
 
 #endif

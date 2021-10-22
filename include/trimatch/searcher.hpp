@@ -24,8 +24,7 @@ Main interface for exact matching, predictive search and approximate search
 #ifndef TRIMATCH_SEARCHER
 #define TRIMATCH_SEARCHER
 
-#include "sftrie.hpp"
-#include "levenshtein_dfa.hpp"
+#include "index.hpp"
 
 namespace trimatch
 {
@@ -33,17 +32,17 @@ namespace trimatch
 template<
 	class text,
 	class integer,
-	class trie = sftrie::set<text, integer>,
-	class approximate_matcher = LevenshteinDFA<text>
+	class trie,
+	class approximate_matcher
 >
-class searcher
+class index<text, integer, trie, approximate_matcher>::search_client
 {
 public:
 	using predictive_search_result_iterator = typename trie::traversal_iterator;
 	using approximate_search_result = std::pair<text, integer>;
 	// TODO: class approximate_search_iterator;
 
-	searcher(const trie& T);
+	search_client(const trie& T);
 
 	bool exact(const text& query) const;
 	predictive_search_result_iterator predict(const text& query);
@@ -57,7 +56,7 @@ public:
 
 private:
 	const trie& T;
-	typename trie::common_searcher trie_searcher;
+	typename trie::common_searcher trie_search_client;
 
 	template<class back_insert_iterator>
 	void approx_step(approximate_matcher& matcher,
@@ -66,36 +65,36 @@ private:
 
 
 template<class text, class integer, class trie, class approximate_matcher>
-searcher<text, integer, trie, approximate_matcher>::searcher(const trie& T):
-	T(T), trie_searcher(T.searcher())
+index<text, integer, trie, approximate_matcher>::search_client::search_client(const trie& T):
+	T(T), trie_search_client(T.searcher())
 {}
 
 template<class text, class integer, class trie, class approximate_matcher>
-bool searcher<text, integer, trie, approximate_matcher>::exact(const text& query) const
+bool index<text, integer, trie, approximate_matcher>::search_client::exact(const text& query) const
 {
 	return T.exists(query);
 }
 
 template<class text, class integer, class trie, class approximate_matcher>
-typename searcher<text, integer, trie, approximate_matcher>::predictive_search_result_iterator
-searcher<text, integer, trie, approximate_matcher>::predict(const text& query)
+typename index<text, integer, trie, approximate_matcher>::search_client::predictive_search_result_iterator
+index<text, integer, trie, approximate_matcher>::search_client::predict(const text& query)
 {
-	return trie_searcher.traverse(query);
+	return trie_search_client.traverse(query);
 }
 
 template<class text, class integer, class trie, class approximate_matcher>
 template<class back_insert_iterator>
-void searcher<text, integer, trie, approximate_matcher>::predict(
+void index<text, integer, trie, approximate_matcher>::search_client::predict(
 	const text& query, back_insert_iterator bi) const
 {
-	typename trie::common_searcher searcher(T);
-	for(const auto& r: searcher.traverse(query))
+	typename trie::common_search_client search_client(T);
+	for(const auto& r: search_client.traverse(query))
 		*bi++ = r;
 }
 
 template<class text, class integer, class trie, class approximate_matcher>
 template<class back_insert_iterator>
-void searcher<text, integer, trie, approximate_matcher>::approx(
+void index<text, integer, trie, approximate_matcher>::search_client::approx(
 	const text& query, back_insert_iterator bi, integer max_edits) const
 {
 	approximate_matcher matcher(query, max_edits);
@@ -105,7 +104,7 @@ void searcher<text, integer, trie, approximate_matcher>::approx(
 
 template<class text, class integer, class trie, class approximate_matcher>
 template<class back_insert_iterator>
-void searcher<text, integer, trie, approximate_matcher>::approx_step(
+void index<text, integer, trie, approximate_matcher>::search_client::approx_step(
 	approximate_matcher& matcher, integer root, text& current, back_insert_iterator& bi) const
 {
 	// TODO: use abstract interface
