@@ -124,39 +124,37 @@ struct index<text, integer, trie, approximate_matcher>::search_client::approxima
 	approximate_search_iterator& operator++()
 	{
 		const auto& nodes = T.raw_data();
-		bool transition_result = true;
+		bool transition_succeeded = true;
 		do{
-			if(transition_result == false){
-				path.pop_back();
-				current.pop_back();
-				while(path.size() > 1 && path.back() == nodes[nodes[path[path.size() - 2]].next].next - 1)
-					back_transition();
-				if(path.size() > 1){
-					auto next = path.back() + 1; // next sibling
-					back_transition();
-					transition_result = try_transition(next);
-				}
-				else{
-					path.pop_back();
-				}
-			}
-			else if(!nodes[path.back()].leaf){
+			if(transition_succeeded && !nodes[path.back()].leaf){
 				auto next = nodes[path.back()].next; // first child
-				transition_result = try_transition(next);
+				transition_succeeded = try_transition(next);
 			}
 			else{
+				if(!transition_succeeded && path.size() > 1 && path.back() < nodes[nodes[path[path.size() - 2]].next].next - 1){
+					auto next = path.back() + 1; // next sibling
+					path.pop_back();
+					current.pop_back();
+					transition_succeeded = try_transition(next);
+					continue;
+				}
+
+				if(!transition_succeeded){
+					path.pop_back();
+					current.pop_back();
+				}
 				while(path.size() > 1 && path.back() == nodes[nodes[path[path.size() - 2]].next].next - 1)
 					back_transition();
 				if(path.size() > 1){
 					auto next = path.back() + 1; // next sibling
 					back_transition();
-					transition_result = try_transition(next);
+					transition_succeeded = try_transition(next);
 				}
 				else{
 					path.pop_back();
 				}
 			}
-		}while(!path.empty() && (transition_result == false || !(nodes[path.back()].match && matcher.matched())));
+		}while(!path.empty() && (!transition_succeeded || !(nodes[path.back()].match && matcher.matched())));
 
 		return *this;
 	}
