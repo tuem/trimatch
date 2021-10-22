@@ -99,6 +99,7 @@ struct index<text, integer, trie, approximate_matcher>::search_client::approxima
 
 	const text& operator*()
 	{
+		// TODO: return distance
 		return current;
 	}
 
