@@ -77,10 +77,8 @@ int main(int argc, char* argv[])
 		}
 		else if(last == '?'){
 			// approximate search
-			std::vector<std::pair<text, integer>> results;
-			searcher.approx(query, std::back_inserter(results), max_edits);
-			for(const auto& r: results)
-				std::cout << std::setw(4) << ++count << ": " << r.first << ", distance=" << r.second << std::endl;
+			for(const auto& t: searcher.approx(query, max_edits))
+				std::cout << std::setw(4) << ++count << ": " << t << std::endl;
 		}
 		else{
 			// exact match

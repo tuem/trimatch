@@ -74,12 +74,12 @@ template<typename text, typename integer>
 size_t exec_approx_dp_trie(const sftrie::set<text, integer>& trie,
 	const std::vector<text>& queries, integer max_edits = 1)
 {
-	// since trie is already built, directly create searcher
+	// since trie is already built, directly create searcher without trimatch::index
 	trimatch::searcher<text, integer, sftrie::set<text, integer>, OnlineEditDistance<text>> searcher(trie);
 	std::vector<std::pair<text, integer>> results;
 	size_t found = 0;
 	for(const auto& query: queries){
-		searcher.approx(query, std::back_inserter(results), max_edits);
+		searcher.approx(query, max_edits, std::back_inserter(results));
 		found += results.size();
 		results.clear();
 	}
@@ -94,7 +94,7 @@ size_t exec_approx_dfa_trie(const sftrie::set<text, integer>& trie,
 	std::vector<std::pair<text, integer>> results;
 	size_t found = 0;
 	for(const auto& query: queries){
-		searcher.approx(query, std::back_inserter(results), max_edits);
+		searcher.approx(query, max_edits, std::back_inserter(results));
 		found += results.size();
 		results.clear();
 	}
@@ -230,7 +230,7 @@ bool benchmark(const std::string& corpus_path, const std::string& algorithm, siz
 int main(int argc, char* argv[])
 {
 	if(argc < 4){
-		std::cout << "usage: validate corpus_path algorithm max_edits" << std::endl;
+		std::cout << "usage: " << argv[0] << " corpus_path algorithm max_edits" << std::endl;
 		std::cout << "  algorithm: (dp|bp|dp-trie|dfa-trie)" << std::endl;
 		return 0;
 	}
