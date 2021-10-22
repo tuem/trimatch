@@ -6,7 +6,7 @@
 
 2. Include header
 ```c++
-#include <trimatch/builder.hpp>
+#include <trimatch/index.hpp>
 ```
 
 3. Build index

@@ -22,7 +22,7 @@ limitations under the License.
 #include <fstream>
 #include <string>
 
-#include <trimatch/builder.hpp>
+#include <trimatch/index.hpp>
 
 
 using text = std::string;

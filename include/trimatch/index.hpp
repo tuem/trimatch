@@ -68,6 +68,22 @@ index<text, integer, trie, approximate_matcher>::searcher() const
 	return searcher_type(T);
 }
 
+
+/*
+Helper function
+*/
+template<
+	class random_access_iterator,
+	class text = typename random_access_iterator::value_type,
+	class integer = typename text::size_type,
+	class trie = sftrie::set<text, integer>,
+	class approximate_matcher = LevenshteinDFA<text>
+>
+index<text, integer, trie> build(random_access_iterator begin, random_access_iterator end)
+{
+	return index<text, integer, trie, approximate_matcher>(begin, end);
+}
+
 }
 
 #endif
