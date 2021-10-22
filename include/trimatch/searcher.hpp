@@ -130,19 +130,18 @@ struct index<text, integer, trie, approximate_matcher>::search_client::approxima
 				auto next = nodes[path.back()].next; // first child
 				transition_succeeded = try_transition(next);
 			}
+			else if(!transition_succeeded && path.size() > 1 && path.back() < nodes[nodes[path[path.size() - 2]].next].next - 1){
+				auto next = path.back() + 1; // next sibling
+				path.pop_back();
+				current.pop_back();
+				transition_succeeded = try_transition(next);
+			}
 			else{
-				if(!transition_succeeded && path.size() > 1 && path.back() < nodes[nodes[path[path.size() - 2]].next].next - 1){
-					auto next = path.back() + 1; // next sibling
-					path.pop_back();
-					current.pop_back();
-					transition_succeeded = try_transition(next);
-					continue;
-				}
-
 				if(!transition_succeeded){
 					path.pop_back();
 					current.pop_back();
 				}
+
 				while(path.size() > 1 && path.back() == nodes[nodes[path[path.size() - 2]].next].next - 1)
 					back_transition();
 				if(path.size() > 1){
