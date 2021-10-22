@@ -83,6 +83,14 @@ index<text, integer, trie> build(random_access_iterator begin, random_access_ite
 	return index<text, integer, trie, approximate_matcher>(begin, end);
 }
 
+template<
+	class text,
+	class integer,
+	class trie = sftrie::set<text, integer>,
+	class approximate_matcher = LevenshteinDFA<text>
+>
+using searcher = typename index<text, integer, trie, approximate_matcher>::search_client;
+
 }
 
 #include "searcher.hpp"

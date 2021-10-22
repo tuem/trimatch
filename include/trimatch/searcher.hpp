@@ -29,28 +29,24 @@ Main interface for exact matching, predictive search and approximate search
 namespace trimatch
 {
 
-template<
-	class text,
-	class integer,
-	class trie,
-	class approximate_matcher
->
+template<class text, class integer, class trie, class approximate_matcher>
 class index<text, integer, trie, approximate_matcher>::search_client
 {
 public:
-	using predictive_search_result_iterator = typename trie::traversal_iterator;
+	using predictive_search_iterator = typename trie::traversal_iterator;
 	using approximate_search_result = std::pair<text, integer>;
-	// TODO: class approximate_search_iterator;
+
+	struct approximate_search_iterator;
 
 	search_client(const trie& T);
 
 	bool exact(const text& query) const;
-	predictive_search_result_iterator predict(const text& query);
+	predictive_search_iterator predict(const text& query);
 	template<class back_insert_iterator>
 	void predict(const text& query, back_insert_iterator bi) const;
+	approximate_search_iterator approx(const text& query, integer max_edits = 1) const;
 	template<class back_insert_iterator>
-	void approx(const text& query, back_insert_iterator bi, integer max_edits = 1) const;
-	// TODO: approximate_search_iterator approx
+	void approx(const text& query, integer max_edits, back_insert_iterator bi) const;
 	// TODO: void approx_predict
 	// TODO: approximate_search_iterator approx_predict
 
@@ -61,6 +57,107 @@ private:
 	template<class back_insert_iterator>
 	void approx_step(approximate_matcher& matcher,
 		integer root, text& current, back_insert_iterator& bi) const;
+};
+
+
+template<class text, class integer, class trie, class approximate_matcher>
+struct index<text, integer, trie, approximate_matcher>::search_client::approximate_search_iterator
+{
+	const trie &T;
+
+	const text& query;
+	const integer max_edits;
+
+	approximate_matcher matcher;
+
+	std::vector<integer> path;
+	text current;
+
+	approximate_search_iterator(const trie& T, const text& query, integer max_edits):
+		T(T), query(query), max_edits(max_edits), matcher(query, max_edits)
+	{
+		if(!query.empty()){
+			path.push_back(0);
+			++*this;
+		}
+	}
+
+	approximate_search_iterator& begin()
+	{
+		return *this;
+	}
+
+	approximate_search_iterator end()
+	{
+		return approximate_search_iterator(T, text(), 0);
+	}
+
+	bool operator!=(const approximate_search_iterator& i) const
+	{
+		return path != i.path;
+	}
+
+	const text& operator*()
+	{
+		// TODO: return distance
+		return current;
+	}
+
+	void back_transition()
+	{
+		path.pop_back();
+		current.pop_back();
+		matcher.back();
+	}
+
+	bool try_transition(integer next)
+	{
+		const auto& nodes = T.raw_data();
+
+		auto c = nodes[next].label;
+		auto result = matcher.update(c);
+		path.push_back(next);
+		current.push_back(c);
+
+		return result;
+	}
+
+	approximate_search_iterator& operator++()
+	{
+		const auto& nodes = T.raw_data();
+		bool transition_succeeded = true;
+		do{
+			if(transition_succeeded && !nodes[path.back()].leaf){
+				auto next = nodes[path.back()].next; // first child
+				transition_succeeded = try_transition(next);
+			}
+			else if(!transition_succeeded && path.size() > 1 && path.back() < nodes[nodes[path[path.size() - 2]].next].next - 1){
+				auto next = path.back() + 1; // next sibling
+				path.pop_back();
+				current.pop_back();
+				transition_succeeded = try_transition(next);
+			}
+			else{
+				if(!transition_succeeded){
+					path.pop_back();
+					current.pop_back();
+				}
+
+				while(path.size() > 1 && path.back() == nodes[nodes[path[path.size() - 2]].next].next - 1)
+					back_transition();
+				if(path.size() > 1){
+					auto next = path.back() + 1; // next sibling
+					back_transition();
+					transition_succeeded = try_transition(next);
+				}
+				else{
+					path.pop_back();
+				}
+			}
+		}while(!path.empty() && (!transition_succeeded || !(nodes[path.back()].match && matcher.matched())));
+
+		return *this;
+	}
 };
 
 
@@ -76,7 +173,7 @@ bool index<text, integer, trie, approximate_matcher>::search_client::exact(const
 }
 
 template<class text, class integer, class trie, class approximate_matcher>
-typename index<text, integer, trie, approximate_matcher>::search_client::predictive_search_result_iterator
+typename index<text, integer, trie, approximate_matcher>::search_client::predictive_search_iterator
 index<text, integer, trie, approximate_matcher>::search_client::predict(const text& query)
 {
 	return trie_search_client.traverse(query);
@@ -93,9 +190,16 @@ void index<text, integer, trie, approximate_matcher>::search_client::predict(
 }
 
 template<class text, class integer, class trie, class approximate_matcher>
+typename index<text, integer, trie, approximate_matcher>::search_client::approximate_search_iterator
+index<text, integer, trie, approximate_matcher>::search_client::approx(const text& query, integer max_edits) const
+{
+	return approximate_search_iterator(T, query, max_edits);
+}
+
+template<class text, class integer, class trie, class approximate_matcher>
 template<class back_insert_iterator>
 void index<text, integer, trie, approximate_matcher>::search_client::approx(
-	const text& query, back_insert_iterator bi, integer max_edits) const
+	const text& query, integer max_edits, back_insert_iterator bi) const
 {
 	approximate_matcher matcher(query, max_edits);
 	text current;
