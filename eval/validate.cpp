@@ -87,8 +87,8 @@ template<typename text, typename integer>
 size_t exec_approx_dp_trie(const sftrie::set<text, integer>& trie,
 	const std::vector<text>& queries, integer max_edits = 1)
 {
-	// since trie is already built, directly create search_client
-	typename trimatch::index<text, integer, sftrie::set<text, integer>, OnlineEditDistance<text>>::search_client searcher(trie);
+	// since trie is already built, directly create searcher
+	trimatch::searcher<text, integer, sftrie::set<text, integer>, OnlineEditDistance<text>> searcher(trie);
 	std::vector<std::pair<text, integer>> results;
 	size_t found = 0;
 	for(const auto& q: queries){
@@ -105,7 +105,7 @@ template<typename text, typename integer>
 size_t exec_approx_dfa_trie(const sftrie::set<text, integer>& trie,
 	const std::vector<text>& queries, integer max_edits = 1)
 {
-	typename trimatch::index<text, integer>::search_client searcher(trie);
+	trimatch::searcher<text, integer> searcher(trie);
 	std::vector<std::pair<text, integer>> results;
 	size_t found = 0;
 	for(const auto& q: queries){
