@@ -40,15 +40,20 @@ public:
 
 	search_client(const trie& T);
 
+	// exact match
 	bool exact(const text& query) const;
+
+	// predictive search
 	predictive_search_iterator predict(const text& query);
 	template<class back_insert_iterator>
 	void predict(const text& query, back_insert_iterator bi) const;
+
+	// approximate search
 	approximate_search_iterator approx(const text& query, integer max_edits = 1) const;
 	template<class back_insert_iterator>
 	void approx(const text& query, integer max_edits, back_insert_iterator bi) const;
-	// TODO: void approx_predict
-	// TODO: approximate_search_iterator approx_predict
+
+	// TODO: approximate predictive search
 
 private:
 	const trie& T;
