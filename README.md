@@ -16,7 +16,7 @@ std::vector<std::u32string> texts; // you can also use string, wstring, u16strin
 auto index = trimatch::build(texts.begin(), texts.end());
 ```
 
-4. search queries
+4. Search queries
 ```c++
 std::u32string query = ...;
 auto searcher = index.searcher();
