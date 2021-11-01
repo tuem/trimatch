@@ -57,7 +57,7 @@ int main(int argc, char* argv[])
 	sftrie::sort_texts(std::begin(texts), std::end(texts));
 	std::cerr << "done." << std::endl;
 
-	auto index = trimatch::build(std::begin(texts), std::end(texts));
+	auto index = trimatch::build(texts);
 	auto searcher = index.searcher();
 	while(true){
 		std::cerr << "> ";

@@ -13,12 +13,12 @@
 ```c++
 std::vector<std::u32string> texts; // you can also use string, wstring, u16string, etc.
 ...
-auto index = trimatch::build(texts.begin(), texts.end());
+auto index = trimatch::build(texts);
 ```
 
 4. Search queries
 ```c++
-std::u32string query = ...;
+std::u32string query = U"...";
 auto searcher = index.searcher();
 
 std::cout << "exact match: " << searcher.exact(query) ? "found" : "not found" << std::endl;

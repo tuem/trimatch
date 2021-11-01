@@ -24,7 +24,7 @@ Controller for tries and searchers
 #ifndef TRIMATCH_INDEX
 #define TRIMATCH_INDEX
 
-#include <vector>
+#include <iterator>
 
 #include "sftrie.hpp"
 #include "levenshtein_dfa.hpp"
@@ -45,6 +45,8 @@ public:
 
 	template<typename random_access_iterator>
 	index(random_access_iterator begin, random_access_iterator end);
+	template<typename random_accessible_container>
+	index(const random_accessible_container& texts);
 
 	search_client searcher() const;
 
@@ -61,6 +63,14 @@ index<text, integer, trie, approximate_matcher>::index(
 {}
 
 template<class text, class integer, class trie, class approximate_matcher>
+template<typename random_accessible_container>
+index<text, integer, trie, approximate_matcher>::index(
+	const random_accessible_container& texts
+):
+	T(std::begin(texts), std::end(texts))
+{}
+
+template<class text, class integer, class trie, class approximate_matcher>
 typename index<text, integer, trie, approximate_matcher>::search_client
 index<text, integer, trie, approximate_matcher>::searcher() const
 {
@@ -68,12 +78,11 @@ index<text, integer, trie, approximate_matcher>::searcher() const
 }
 
 
-/*
-Helper function
-*/
+// Syntax sugar
+
 template<
 	class random_access_iterator,
-	class text = typename random_access_iterator::value_type,
+	class text = typename std::iterator_traits<random_access_iterator>::value_type,
 	class integer = typename text::size_type,
 	class trie = sftrie::set<text, integer>,
 	class approximate_matcher = LevenshteinDFA<text>
@@ -82,6 +91,19 @@ index<text, integer, trie> build(random_access_iterator begin, random_access_ite
 {
 	return index<text, integer, trie, approximate_matcher>(begin, end);
 }
+
+template<
+	class random_accessible_container,
+	class text = typename random_accessible_container::value_type,
+	class integer = typename text::size_type,
+	class trie = sftrie::set<text, integer>,
+	class approximate_matcher = LevenshteinDFA<text>
+>
+index<text, integer, trie> build(const random_accessible_container& texts)
+{
+	return index<text, integer, trie, approximate_matcher>(texts);
+}
+
 
 template<
 	class text,
