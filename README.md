@@ -18,7 +18,7 @@ auto index = trimatch::build(texts);
 
 4. Search queries
 ```c++
-std::string query = U"...";
+std::string query = "...";
 auto searcher = index.searcher();
 
 std::cout << "exact match: " << searcher.exact(query) ? "found" : "not found" << std::endl;
