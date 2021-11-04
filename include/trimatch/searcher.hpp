@@ -102,10 +102,9 @@ struct index<text, integer, trie, approximate_matcher>::search_client::approxima
 		return path != i.path;
 	}
 
-	const text& operator*()
+	const approximate_search_result operator*()
 	{
-		// TODO: return distance
-		return current;
+		return std::make_pair(current, matcher.distance());
 	}
 
 	void back_transition()

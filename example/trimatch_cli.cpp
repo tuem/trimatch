@@ -77,8 +77,8 @@ int main(int argc, char* argv[])
 		}
 		else if(last == '?'){
 			// approximate search
-			for(const auto& t: searcher.approx(query, max_edits))
-				std::cout << std::setw(4) << ++count << ": " << t << std::endl;
+			for(const auto& p: searcher.approx(query, max_edits))
+				std::cout << std::setw(4) << ++count << ": text=" << p.first << ", distance=" << p.second << std::endl;
 		}
 		else{
 			// exact match
