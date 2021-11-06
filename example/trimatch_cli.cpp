@@ -17,6 +17,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+/*
+Text search program using trimatch.
+Usage: trimatch_cli corpus_path [max_edits=1]
+If a query ends with '*' or '?', predictive search or approximate search will be done, respectively.
+*/
+
 #include <iostream>
 #include <iomanip>
 #include <fstream>
