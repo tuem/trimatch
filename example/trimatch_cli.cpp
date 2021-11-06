@@ -17,6 +17,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+/*
+Text search program using trimatch.
+Usage: trimatch_cli corpus_path [max_edits=1]
+If a query ends with '*' or '?', predictive search or approximate search will be done, respectively.
+*/
+
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -67,7 +73,7 @@ int main(int argc, char* argv[])
 			break;
 
 		auto last = query.back();
-		if(last == '*' || last == '?')
+		if(last == '*' || last == '?' || last == '&')
 			query.pop_back();
 		integer count = 0;
 		if(last == '*'){
@@ -78,6 +84,13 @@ int main(int argc, char* argv[])
 		else if(last == '?'){
 			// approximate search
 			for(const auto& p: searcher.approx(query, max_edits))
+				std::cout << std::setw(4) << ++count << ": text=" << p.first << ", distance=" << p.second << std::endl;
+		}
+		else if(last == '&'){
+			// approximate predictive search
+			std::vector<std::pair<text, integer>> results;
+			searcher.approx_predict(query, max_edits, std::back_inserter(results));
+			for(const auto& p: results)
 				std::cout << std::setw(4) << ++count << ": text=" << p.first << ", distance=" << p.second << std::endl;
 		}
 		else{

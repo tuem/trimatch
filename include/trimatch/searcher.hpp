@@ -53,7 +53,9 @@ public:
 	template<class back_insert_iterator>
 	void approx(const text& query, integer max_edits, back_insert_iterator bi) const;
 
-	// TODO: approximate predictive search
+	// approximate predictive search
+	template<class back_insert_iterator>
+	void approx_predict(const text& query, integer max_edits, back_insert_iterator bi) const;
 
 private:
 	const trie& T;
@@ -62,6 +64,13 @@ private:
 	template<class back_insert_iterator>
 	void approx_step(approximate_matcher& matcher,
 		integer root, text& current, back_insert_iterator& bi) const;
+
+	template<class back_insert_iterator>
+	void approx_predict_step(integer max_edits, approximate_matcher& matcher,
+		integer root, text& current, back_insert_iterator& bi) const;
+	template<class back_insert_iterator>
+	void correct_approx_predict_results(integer max_edits, approximate_matcher& matcher,
+		integer root, text& current, integer current_edits, back_insert_iterator& bi) const;
 };
 
 
@@ -229,6 +238,65 @@ void index<text, integer, trie, approximate_matcher>::search_client::approx_step
 			current.pop_back();
 			matcher.back();
 		}
+	}
+}
+
+template<class text, class integer, class trie, class approximate_matcher>
+template<class back_insert_iterator>
+void index<text, integer, trie, approximate_matcher>::search_client::approx_predict(
+	const text& query, integer max_edits, back_insert_iterator bi) const
+{
+	approximate_matcher matcher(query, max_edits);
+	text current;
+	approx_predict_step(max_edits, matcher, 0, current, bi);
+}
+
+template<class text, class integer, class trie, class approximate_matcher>
+template<class back_insert_iterator>
+void index<text, integer, trie, approximate_matcher>::search_client::approx_predict_step(
+	integer max_edits, approximate_matcher& matcher, integer root, text& current, back_insert_iterator& bi) const
+{
+	// TODO: use abstract interface
+	const auto& nodes = T.raw_data();
+	if(matcher.matched()){
+		correct_approx_predict_results(max_edits, matcher, root, current, matcher.distance(), bi);
+		return;
+	}
+	if(nodes[root].leaf)
+		return;
+	// TODO: after distance() leaches max_distance(), all we need to do is the exact matching process
+	for(integer i = nodes[root].next; i < nodes[nodes[root].next].next; ++i){
+		if(matcher.update(nodes[i].label)){
+			current.push_back(nodes[i].label);
+			approx_predict_step(max_edits, matcher, i, current, bi);
+			current.pop_back();
+			matcher.back();
+		}
+	}
+}
+
+template<class text, class integer, class trie, class approximate_matcher>
+template<class back_insert_iterator>
+void index<text, integer, trie, approximate_matcher>::search_client::correct_approx_predict_results(
+	integer max_edits, approximate_matcher& matcher, integer root,
+	text& current, integer current_edits, back_insert_iterator& bi) const
+{
+	// TODO: use abstract interface
+	const auto& nodes = T.raw_data();
+	if(nodes[root].match)
+		*bi++ = std::make_pair(current, current_edits);
+	if(nodes[root].leaf)
+		return;
+	for(integer i = nodes[root].next; i < nodes[nodes[root].next].next; ++i){
+		current.push_back(nodes[i].label);
+		if(current_edits <= max_edits && matcher.update(nodes[i].label)){
+			correct_approx_predict_results(max_edits, matcher, i, current, matcher.distance(), bi);
+			matcher.back();
+		}
+		else{
+			correct_approx_predict_results(max_edits, matcher, i, current, current_edits + 1, bi);
+		}
+		current.pop_back();
 	}
 }
 
