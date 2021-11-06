@@ -66,11 +66,11 @@ private:
 		integer root, text& current, back_insert_iterator& bi) const;
 
 	template<class back_insert_iterator>
-	void approx_predict_step(approximate_matcher& matcher,
+	void approx_predict_step(integer max_edits, approximate_matcher& matcher,
 		integer root, text& current, back_insert_iterator& bi) const;
 	template<class back_insert_iterator>
-	void correct_approx_predict_results(const integer root, const integer edits, text& current,
-		back_insert_iterator& bi) const;
+	void correct_approx_predict_results(integer max_edits, approximate_matcher& matcher,
+		integer root, text& current, integer current_edits, back_insert_iterator& bi) const;
 };
 
 
@@ -248,18 +248,18 @@ void index<text, integer, trie, approximate_matcher>::search_client::approx_pred
 {
 	approximate_matcher matcher(query, max_edits);
 	text current;
-	approx_predict_step(matcher, 0, current, bi);
+	approx_predict_step(max_edits, matcher, 0, current, bi);
 }
 
 template<class text, class integer, class trie, class approximate_matcher>
 template<class back_insert_iterator>
 void index<text, integer, trie, approximate_matcher>::search_client::approx_predict_step(
-	approximate_matcher& matcher, integer root, text& current, back_insert_iterator& bi) const
+	integer max_edits, approximate_matcher& matcher, integer root, text& current, back_insert_iterator& bi) const
 {
 	// TODO: use abstract interface
 	const auto& nodes = T.raw_data();
 	if(matcher.matched()){
-		correct_approx_predict_results(root, matcher.distance(), current, bi);
+		correct_approx_predict_results(max_edits, matcher, root, current, matcher.distance(), bi);
 		return;
 	}
 	if(nodes[root].leaf)
@@ -268,7 +268,7 @@ void index<text, integer, trie, approximate_matcher>::search_client::approx_pred
 	for(integer i = nodes[root].next; i < nodes[nodes[root].next].next; ++i){
 		if(matcher.update(nodes[i].label)){
 			current.push_back(nodes[i].label);
-			approx_predict_step(matcher, i, current, bi);
+			approx_predict_step(max_edits, matcher, i, current, bi);
 			current.pop_back();
 			matcher.back();
 		}
@@ -278,17 +278,24 @@ void index<text, integer, trie, approximate_matcher>::search_client::approx_pred
 template<class text, class integer, class trie, class approximate_matcher>
 template<class back_insert_iterator>
 void index<text, integer, trie, approximate_matcher>::search_client::correct_approx_predict_results(
-	const integer root, const integer edits, text& current, back_insert_iterator& bi) const
+	integer max_edits, approximate_matcher& matcher, integer root,
+	text& current, integer current_edits, back_insert_iterator& bi) const
 {
 	// TODO: use abstract interface
 	const auto& nodes = T.raw_data();
 	if(nodes[root].match)
-		*bi++ = std::make_pair(current, edits);
+		*bi++ = std::make_pair(current, current_edits);
 	if(nodes[root].leaf)
 		return;
 	for(integer i = nodes[root].next; i < nodes[nodes[root].next].next; ++i){
 		current.push_back(nodes[i].label);
-		correct_approx_predict_results(i, edits, current, bi);
+		if(current_edits <= max_edits && matcher.update(nodes[i].label)){
+			correct_approx_predict_results(max_edits, matcher, i, current, matcher.distance(), bi);
+			matcher.back();
+		}
+		else{
+			correct_approx_predict_results(max_edits, matcher, i, current, current_edits + 1, bi);
+		}
 		current.pop_back();
 	}
 }
