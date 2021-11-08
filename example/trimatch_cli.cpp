@@ -88,10 +88,10 @@ int main(int argc, char* argv[])
 		}
 		else if(last == '&'){
 			// approximate predictive search
-			std::vector<std::pair<text, integer>> results;
+			std::vector<std::tuple<text, integer, integer>> results;
 			searcher.approx_predict(query, max_edits, std::back_inserter(results));
-			for(const auto& p: results)
-				std::cout << std::setw(4) << ++count << ": text=" << p.first << ", distance=" << p.second << std::endl;
+			for(const auto& t: results)
+				std::cout << std::setw(4) << ++count << ": text=" << std::get<0>(t) << ", distance(prefix)=" << std::get<1>(t) << ", distance(whole)=" << std::get<2>(t) << std::endl;
 		}
 		else{
 			// exact match

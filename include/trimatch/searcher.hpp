@@ -35,6 +35,7 @@ class index<text, integer, trie, approximate_matcher>::search_client
 public:
 	using predictive_search_iterator = typename trie::traversal_iterator;
 	using approximate_search_result = std::pair<text, integer>;
+	using approximate_predictive_search_result = std::tuple<text, integer, integer>;
 
 	struct approximate_search_iterator;
 
@@ -284,7 +285,7 @@ void index<text, integer, trie, approximate_matcher>::search_client::correct_app
 	// TODO: use abstract interface
 	const auto& nodes = T.raw_data();
 	if(nodes[root].match)
-		*bi++ = std::make_pair(current, current_edits);
+		*bi++ = std::make_tuple(current, std::min(matcher.distance(), max_edits), current_edits);
 	if(nodes[root].leaf)
 		return;
 	for(integer i = nodes[root].next; i < nodes[nodes[root].next].next; ++i){
