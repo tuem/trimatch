@@ -209,8 +209,14 @@ LevenshteinDFA<text>::convert(const LevenshteinNFA<text>& nfa,
 	integer created_state = counter++;
 	dfa_states.insert(p, std::make_pair(nfa_states, created_state));
 
-	integer edits = !nfa_states.empty() ? nfa_states.back().second : max_edits + 1;
-	states.emplace_back(0, nfa.is_match(nfa_states), edits); // state.start will be updated later
+	bool match = nfa.is_match(nfa_states);
+	integer edits = max_edits + 1;
+	for(const auto& n: nfa_states)
+		if(!match)
+			edits = std::min(edits, n.second);
+		else if(n.first == nfa.pattern.size())
+			edits = std::min(edits, n.second);
+	states.emplace_back(0, match, edits); // state.start will be updated later
 
 	// *-transition
 	auto new_nfa_states = nfa.step(nfa_states, nullchar());
