@@ -71,7 +71,7 @@ private:
 		integer root, text& current, back_insert_iterator& bi) const;
 	template<class back_insert_iterator>
 	void correct_approx_predict_results(integer max_edits, approximate_matcher& matcher,
-		integer root, text& current, integer current_edits, back_insert_iterator& bi) const;
+		integer root, text& current, integer prefix_edits, integer current_edits, back_insert_iterator& bi) const;
 };
 
 
@@ -260,7 +260,7 @@ void index<text, integer, trie, approximate_matcher>::search_client::approx_pred
 	// TODO: use abstract interface
 	const auto& nodes = T.raw_data();
 	if(matcher.matched()){
-		correct_approx_predict_results(max_edits, matcher, root, current, matcher.distance(), bi);
+		correct_approx_predict_results(max_edits, matcher, root, current, matcher.distance(), matcher.distance(), bi);
 		return;
 	}
 	if(nodes[root].leaf)
@@ -280,22 +280,22 @@ template<class text, class integer, class trie, class approximate_matcher>
 template<class back_insert_iterator>
 void index<text, integer, trie, approximate_matcher>::search_client::correct_approx_predict_results(
 	integer max_edits, approximate_matcher& matcher, integer root,
-	text& current, integer current_edits, back_insert_iterator& bi) const
+	text& current, integer prefix_edits, integer current_edits, back_insert_iterator& bi) const
 {
 	// TODO: use abstract interface
 	const auto& nodes = T.raw_data();
 	if(nodes[root].match)
-		*bi++ = std::make_tuple(current, std::min(matcher.distance(), max_edits), current_edits);
+		*bi++ = std::make_tuple(current, std::min(prefix_edits, current_edits), current_edits);
 	if(nodes[root].leaf)
 		return;
 	for(integer i = nodes[root].next; i < nodes[nodes[root].next].next; ++i){
 		current.push_back(nodes[i].label);
-		if(current_edits <= max_edits && matcher.update(nodes[i].label)){
-			correct_approx_predict_results(max_edits, matcher, i, current, matcher.distance(), bi);
+		if(current_edits <= max_edits && current.size() <= matcher.pattern.size() && matcher.update(nodes[i].label)){
+			correct_approx_predict_results(max_edits, matcher, i, current, std::min(prefix_edits, matcher.distance()), matcher.distance(), bi);
 			matcher.back();
 		}
 		else{
-			correct_approx_predict_results(max_edits, matcher, i, current, current_edits + 1, bi);
+			correct_approx_predict_results(max_edits, matcher, i, current, prefix_edits, current_edits + 1, bi);
 		}
 		current.pop_back();
 	}
