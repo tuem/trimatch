@@ -17,12 +17,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+/*
+Text search program using trimatch.
+Usage: trimatch_cli corpus_path [max_edits=1]
+If a query ends with '*' or '?', predictive search or approximate search will be done, respectively.
+*/
+
 #include <iostream>
 #include <iomanip>
 #include <fstream>
 #include <string>
 
-#include <trimatch/builder.hpp>
+#include <trimatch/index.hpp>
 
 
 using text = std::string;
@@ -57,7 +63,7 @@ int main(int argc, char* argv[])
 	sftrie::sort_texts(std::begin(texts), std::end(texts));
 	std::cerr << "done." << std::endl;
 
-	auto index = trimatch::build(std::begin(texts), std::end(texts));
+	auto index = trimatch::build(texts);
 	auto searcher = index.searcher();
 	while(true){
 		std::cerr << "> ";
@@ -67,7 +73,7 @@ int main(int argc, char* argv[])
 			break;
 
 		auto last = query.back();
-		if(last == '*' || last == '?')
+		if(last == '*' || last == '?' || last == '&')
 			query.pop_back();
 		integer count = 0;
 		if(last == '*'){
@@ -77,10 +83,15 @@ int main(int argc, char* argv[])
 		}
 		else if(last == '?'){
 			// approximate search
-			std::vector<std::pair<text, integer>> results;
-			searcher.approx(query, std::back_inserter(results), max_edits);
-			for(const auto& r: results)
-				std::cout << std::setw(4) << ++count << ": " << r.first << ", distance=" << r.second << std::endl;
+			for(const auto& p: searcher.approx(query, max_edits))
+				std::cout << std::setw(4) << ++count << ": text=" << p.first << ", distance=" << p.second << std::endl;
+		}
+		else if(last == '&'){
+			// approximate predictive search
+			std::vector<std::tuple<text, integer, integer>> results;
+			searcher.approx_predict(query, max_edits, std::back_inserter(results));
+			for(const auto& t: results)
+				std::cout << std::setw(4) << ++count << ": text=" << std::get<0>(t) << ", distance(prefix)=" << std::get<1>(t) << ", distance(whole)=" << std::get<2>(t) << std::endl;
 		}
 		else{
 			// exact match

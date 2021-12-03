@@ -77,10 +77,11 @@ struct LevenshteinDFA<text>::state
 {
 	integer start;
 	bool match;
+	integer current_edits;
 	integer edits;
 
 	state();
-	state(integer start, bool match, integer edits);
+	state(integer start, bool match, integer current_edits, integer edits);
 };
 
 template<typename text>
@@ -98,8 +99,8 @@ template<typename text>
 LevenshteinDFA<text>::state::state(){}
 
 template<typename text>
-LevenshteinDFA<text>::state::state(integer start, bool match, integer edits):
-	start(start), match(match), edits(edits)
+LevenshteinDFA<text>::state::state(integer start, bool match, integer current_edits, integer edits):
+	start(start), match(match), current_edits(current_edits), edits(edits)
 {}
 
 template<typename text>
@@ -134,7 +135,7 @@ LevenshteinDFA<text>::LevenshteinDFA(const LevenshteinNFA<text>& nfa):
 		if(i == 0 || transitions[i - 1].id < transitions[i].id)
 			states[transitions[i].id].start = i;
 	// sentinel
-	states.emplace_back(transitions.size(), false, max_edits + 1);
+	states.emplace_back(transitions.size(), false, max_edits + 1, max_edits + 1);
 	states.front().edits = 0;
 
 	// initial state
@@ -194,7 +195,7 @@ inline typename LevenshteinDFA<text>::integer LevenshteinDFA<text>::max_distance
 template<typename text>
 inline typename LevenshteinDFA<text>::integer LevenshteinDFA<text>::current_distance() const
 {
-	return states[current_states.back()].edits;
+	return states[current_states.back()].current_edits;
 }
 
 template<typename text>
@@ -217,8 +218,16 @@ LevenshteinDFA<text>::convert(const LevenshteinNFA<text>& nfa,
 	integer created_state = counter++;
 	dfa_states.insert(p, std::make_pair(nfa_states, created_state));
 
-	integer edits = !nfa_states.empty() ? nfa_states.back().second : max_edits + 1;
-	states.emplace_back(0, nfa.is_match(nfa_states), edits); // state.start will be updated later
+	bool match = nfa.is_match(nfa_states);
+	integer current_edits = max_edits + 1, edits = current_edits;
+	for(const auto& n: nfa_states){
+		current_edits = std::min(current_edits, n.second);
+		if(!match)
+			edits = std::min(edits, n.second);
+		else if(n.first == nfa.pattern.size())
+			edits = std::min(edits, n.second);
+	}
+	states.emplace_back(0, match, current_edits, edits); // state.start will be updated later
 
 	// *-transition
 	auto new_nfa_states = nfa.step(nfa_states, nullchar());
