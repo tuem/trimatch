@@ -61,7 +61,7 @@ public:
 private:
 	const trie& T;
 	typename trie::common_searcher trie_search_client;
-	std::vector<typename text::value_type> query_symbols;
+	std::vector<std::vector<typename text::value_type>> query_symbols;
 
 	template<class back_insert_iterator>
 	void approx_step(const text& query, approximate_matcher& matcher,
@@ -219,9 +219,12 @@ void index<text, integer, trie, approximate_matcher>::search_client::approx(
 	approximate_matcher matcher(query, max_edits);
 	text current;
 	query_symbols.clear();
-	std::set<typename text::value_type> symbols(query.begin(), query.end());
-	for(const auto c: symbols)
-		query_symbols.push_back(c);
+	for(integer i = 0; i < query.size(); ++i){
+		integer start = i > max_edits ? i - max_edits : 0;
+		integer end = i + max_edits < query.size() ? i + max_edits : query.size() - 1;
+		std::set<typename text::value_type> symbols(query.begin() + start, query.begin() + end + 1);
+		query_symbols.emplace_back(symbols.begin(), symbols.end());
+	}
 	approx_step(query, matcher, 0, current, bi);
 }
 
@@ -249,15 +252,16 @@ void index<text, integer, trie, approximate_matcher>::search_client::approx_step
 	}
 	else{
 		// skip symbols not in query
+		const auto& symbols = current.size() < query_symbols.size() ? query_symbols[current.size()] : query_symbols.back();
 		integer i = T.data[root].next, end = T.data[i].next;
 		integer j = 0;
-		if(T.data[i].label > query_symbols.back() || T.data[end - 1].label < query_symbols.front())
+		if(T.data[i].label > symbols.back() || T.data[end - 1].label < symbols.front())
 			return;
-		while(i < end && j < query_symbols.size()){
-			if(T.data[i].label < query_symbols[j]){
+		while(i < end && j < symbols.size()){
+			if(T.data[i].label < symbols[j]){
 				++i;
 			}
-			else if(T.data[i].label > query_symbols[j]){
+			else if(T.data[i].label > symbols[j]){
 				++j;
 			}
 			else{
