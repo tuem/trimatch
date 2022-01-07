@@ -34,12 +34,11 @@ https://julesjacobs.com/2015/06/17/disqus-levenshtein-simple-and-fast.html
 namespace trimatch
 {
 
-template<typename text>
+template<typename text, typename integer>
 class LevenshteinDFA
 {
 public:
 	using symbol = typename text::value_type;
-	using integer = typename text::size_type;
 
 	struct state;
 	struct transition;
@@ -71,8 +70,8 @@ private:
 		std::map<std::vector<nfa_state>, integer>& dfa_states, integer& counter);
 };
 
-template<typename text>
-struct LevenshteinDFA<text>::state
+template<typename text, typename integer>
+struct LevenshteinDFA<text, integer>::state
 {
 	integer start;
 	bool match;
@@ -82,8 +81,8 @@ struct LevenshteinDFA<text>::state
 	state(integer start, bool match, integer edits);
 };
 
-template<typename text>
-struct LevenshteinDFA<text>::transition
+template<typename text, typename integer>
+struct LevenshteinDFA<text, integer>::transition
 {
 	integer id;
 	integer next;
@@ -93,21 +92,21 @@ struct LevenshteinDFA<text>::transition
 	bool operator<(const transition& s) const;
 };
 
-template<typename text>
-LevenshteinDFA<text>::state::state(){}
+template<typename text, typename integer>
+LevenshteinDFA<text, integer>::state::state(){}
 
-template<typename text>
-LevenshteinDFA<text>::state::state(integer start, bool match, integer edits):
+template<typename text, typename integer>
+LevenshteinDFA<text, integer>::state::state(integer start, bool match, integer edits):
 	start(start), match(match), edits(edits)
 {}
 
-template<typename text>
-LevenshteinDFA<text>::transition::transition(integer id, integer next, symbol label):
+template<typename text, typename integer>
+LevenshteinDFA<text, integer>::transition::transition(integer id, integer next, symbol label):
 	id(id), next(next), label(label)
 {}
 
-template<typename text>
-inline bool LevenshteinDFA<text>::transition::operator<(const transition& s) const
+template<typename text, typename integer>
+inline bool LevenshteinDFA<text, integer>::transition::operator<(const transition& s) const
 {
 	if(id != s.id)
 		return id < s.id;
@@ -117,8 +116,8 @@ inline bool LevenshteinDFA<text>::transition::operator<(const transition& s) con
 		return next < s.next;
 }
 
-template<typename text>
-LevenshteinDFA<text>::LevenshteinDFA(const LevenshteinNFA<text>& nfa):
+template<typename text, typename integer>
+LevenshteinDFA<text, integer>::LevenshteinDFA(const LevenshteinNFA<text>& nfa):
 	pattern(nfa.pattern), max_edits(nfa.max_edits)
 {
 	auto nfa_states = nfa.start();
@@ -129,29 +128,29 @@ LevenshteinDFA<text>::LevenshteinDFA(const LevenshteinNFA<text>& nfa):
 	states.resize(counter);
 
 	std::sort(transitions.begin(), transitions.end());
-	for(integer i = 0; i < transitions.size(); ++i)
+	for(typename std::vector<transition>::size_type i = 0; i < transitions.size(); ++i)
 		if(i == 0 || transitions[i - 1].id < transitions[i].id)
-			states[transitions[i].id].start = i;
+			states[transitions[i].id].start = static_cast<integer>(i);
 	// sentinel
-	states.emplace_back(transitions.size(), false, max_edits + 1);
+	states.emplace_back(static_cast<integer>(transitions.size()), false, max_edits + 1);
 
 	// initial state
 	current_states.push_back(0);
 }
 
-template<typename text>
-LevenshteinDFA<text>::LevenshteinDFA(const text& pattern, integer max_edits):
+template<typename text, typename integer>
+LevenshteinDFA<text, integer>::LevenshteinDFA(const text& pattern, integer max_edits):
 	LevenshteinDFA(LevenshteinNFA<text>(pattern, max_edits))
 {}
 
-template<typename text>
-constexpr const typename LevenshteinDFA<text>::symbol LevenshteinDFA<text>::nullchar()
+template<typename text, typename integer>
+constexpr const typename LevenshteinDFA<text, integer>::symbol LevenshteinDFA<text, integer>::nullchar()
 {
 	return static_cast<symbol>(0);
 }
 
-template<typename text>
-inline bool LevenshteinDFA<text>::update(const symbol c)
+template<typename text, typename integer>
+inline bool LevenshteinDFA<text, integer>::update(const symbol c)
 {
 	// binary search
 	integer current = states[current_states.back()].start, last = states[current_states.back() + 1].start - 1;
@@ -170,34 +169,33 @@ inline bool LevenshteinDFA<text>::update(const symbol c)
 	return updatable;
 }
 
-template<typename text>
-inline bool LevenshteinDFA<text>::matched() const
+template<typename text, typename integer>
+inline bool LevenshteinDFA<text, integer>::matched() const
 {
 	return states[current_states.back()].match;
 }
 
-template<typename text>
-inline void LevenshteinDFA<text>::back()
+template<typename text, typename integer>
+inline void LevenshteinDFA<text, integer>::back()
 {
 	if(current_states.size() > 1)
 		current_states.pop_back();
 }
 
-template<typename text>
-inline typename LevenshteinDFA<text>::integer LevenshteinDFA<text>::max_distance() const
+template<typename text, typename integer>
+inline integer LevenshteinDFA<text, integer>::max_distance() const
 {
 	return max_edits;
 }
 
-template<typename text>
-inline typename LevenshteinDFA<text>::integer LevenshteinDFA<text>::distance() const
+template<typename text, typename integer>
+inline integer LevenshteinDFA<text, integer>::distance() const
 {
 	return states[current_states.back()].edits;
 }
 
-template<typename text>
-typename LevenshteinDFA<text>::integer
-LevenshteinDFA<text>::convert(const LevenshteinNFA<text>& nfa,
+template<typename text, typename integer>
+integer LevenshteinDFA<text, integer>::convert(const LevenshteinNFA<text>& nfa,
 	const std::vector<nfa_state>& nfa_states, const std::set<symbol>& nfa_transitions,
 	std::map<std::vector<nfa_state>, integer>& dfa_states, integer& counter)
 {
@@ -211,11 +209,12 @@ LevenshteinDFA<text>::convert(const LevenshteinNFA<text>& nfa,
 
 	bool match = nfa.is_match(nfa_states);
 	integer edits = max_edits + 1;
-	for(const auto& n: nfa_states)
+	for(const auto& n: nfa_states){
 		if(!match)
 			edits = std::min(edits, n.second);
-		else if(n.first == nfa.pattern.size())
+		else if(n.first == static_cast<integer>(nfa.pattern.size()))
 			edits = std::min(edits, n.second);
+	}
 	states.emplace_back(0, match, edits); // state.start will be updated later
 
 	// *-transition

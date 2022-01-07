@@ -36,7 +36,7 @@ template<
 	class text,
 	class integer,
 	class trie = sftrie::set<text, integer>,
-	class approximate_matcher = LevenshteinDFA<text>
+	class approximate_matcher = LevenshteinDFA<text, integer>
 >
 class index
 {
@@ -85,7 +85,7 @@ template<
 	class text = typename std::iterator_traits<random_access_iterator>::value_type,
 	class integer = unsigned long,
 	class trie = sftrie::set<text, integer>,
-	class approximate_matcher = LevenshteinDFA<text>
+	class approximate_matcher = LevenshteinDFA<text, integer>
 >
 index<text, integer, trie> build(random_access_iterator begin, random_access_iterator end)
 {
@@ -97,7 +97,7 @@ template<
 	class text = typename random_accessible_container::value_type,
 	class integer = unsigned long,
 	class trie = sftrie::set<text, integer>,
-	class approximate_matcher = LevenshteinDFA<text>
+	class approximate_matcher = LevenshteinDFA<text, integer>
 >
 index<text, integer, trie> build(const random_accessible_container& texts)
 {
@@ -109,7 +109,7 @@ template<
 	class text,
 	class integer,
 	class trie = sftrie::set<text, integer>,
-	class approximate_matcher = LevenshteinDFA<text>
+	class approximate_matcher = LevenshteinDFA<text, integer>
 >
 using searcher = typename index<text, integer, trie, approximate_matcher>::search_client;
 
