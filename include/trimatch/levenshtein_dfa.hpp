@@ -34,7 +34,7 @@ https://julesjacobs.com/2015/06/17/disqus-levenshtein-simple-and-fast.html
 namespace trimatch
 {
 
-template<typename text, typename integer>
+template<typename text, typename integer = typename text::size_type>
 class LevenshteinDFA
 {
 public:
