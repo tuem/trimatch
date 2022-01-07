@@ -211,9 +211,9 @@ integer LevenshteinDFA<text, integer>::convert(const LevenshteinNFA<text>& nfa,
 	integer edits = max_edits + 1;
 	for(const auto& n: nfa_states){
 		if(!match)
-			edits = std::min(edits, n.second);
+			edits = std::min(edits, static_cast<integer>(n.second));
 		else if(n.first == static_cast<integer>(nfa.pattern.size()))
-			edits = std::min(edits, n.second);
+			edits = std::min(edits, static_cast<integer>(n.second));
 	}
 	states.emplace_back(0, match, edits); // state.start will be updated later
 
