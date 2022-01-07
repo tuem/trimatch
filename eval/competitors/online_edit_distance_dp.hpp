@@ -8,12 +8,11 @@ An online version of dynamic programming-based edit distance
 #include <string>
 
 // symbol-wise edit distance computation using dynamic programing
-template<typename text = std::string>
+template<typename text = std::string, typename integer = typename text::size_type>
 class OnlineEditDistance
 {
 public:
 	using symbol = typename text::value_type;
-	using integer = typename text::size_type;
 
 	const text& pattern;
 	const integer max;
@@ -23,8 +22,8 @@ public:
 	{
 		for(auto& d: D)
 			d.resize(pattern.size() + 1);
-		for(integer j = 0; j < D[i].size(); ++j)
-			D[i][j] = j;
+		for(typename std::vector<std::vector<integer>>::size_type j = 0; j < D[i].size(); ++j)
+			D[i][j] = static_cast<integer>(j);
 	}
 
 	bool update(const symbol c)
@@ -33,7 +32,7 @@ public:
 
 		D[i][0] = D[i - 1][0] + 1;
 		integer min = D[i][0];
-		for(integer j = 1; j < D[i].size(); ++j){
+		for(typename std::vector<std::vector<integer>>::size_type j = 1; j < D[i].size(); ++j){
 			auto del = D[i][j - 1] + 1;
 			auto ins = D[i - 1][j] + 1;
 			auto sub = D[i - 1][j - 1] + (pattern[j - 1] == c ? 0 : 1);

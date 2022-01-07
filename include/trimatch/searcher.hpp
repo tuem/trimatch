@@ -114,7 +114,7 @@ struct index<text, integer, trie, approximate_matcher>::search_client::approxima
 
 	const approximate_search_result operator*()
 	{
-		return std::make_pair(current, matcher.distance());
+		return std::make_pair(current, static_cast<integer>(matcher.distance()));
 	}
 
 	void back_transition()
@@ -228,7 +228,7 @@ void index<text, integer, trie, approximate_matcher>::search_client::approx_step
 	// TODO: use abstract interface
 	const auto& nodes = T.raw_data();
 	if(nodes[root].match && matcher.matched())
-		*bi++ = std::make_pair(current, matcher.distance());
+		*bi++ = std::make_pair(current, static_cast<integer>(matcher.distance()));
 	if(nodes[root].leaf)
 		return;
 	// TODO: after distance() leaches max_distance(), all we need to do is the exact matching process
@@ -291,7 +291,8 @@ void index<text, integer, trie, approximate_matcher>::search_client::correct_app
 	for(integer i = nodes[root].next; i < nodes[nodes[root].next].next; ++i){
 		current.push_back(nodes[i].label);
 		if(current_edits <= max_edits && current.size() <= matcher.pattern.size() && matcher.update(nodes[i].label)){
-			correct_approx_predict_results(max_edits, matcher, i, current, std::min(prefix_edits, matcher.distance()), matcher.distance(), bi);
+			correct_approx_predict_results(max_edits, matcher, i, current,
+				std::min(prefix_edits, static_cast<integer>(matcher.distance())), matcher.distance(), bi);
 			matcher.back();
 		}
 		else{

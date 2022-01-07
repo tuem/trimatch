@@ -75,7 +75,7 @@ size_t exec_approx_dp_trie(const sftrie::set<text, integer>& trie,
 	const std::vector<text>& queries, integer max_edits = 1)
 {
 	// since trie is already built, directly create searcher without trimatch::index
-	trimatch::searcher<text, integer, sftrie::set<text, integer>, OnlineEditDistance<text>> searcher(trie);
+	trimatch::searcher<text, integer, sftrie::set<text, integer>, OnlineEditDistance<text, integer>> searcher(trie);
 	std::vector<std::pair<text, integer>> results;
 	size_t found = 0;
 	for(const auto& query: queries){
