@@ -198,8 +198,8 @@ template<class back_insert_iterator>
 void index<text, integer, trie, approximate_matcher>::search_client::predict(
 	const text& query, back_insert_iterator bi) const
 {
-	typename trie::common_search_client search_client(T);
-	for(const auto& r: search_client.traverse(query))
+	typename trie::common_searcher searcher(T);
+	for(const auto& r: searcher.traverse(query))
 		*bi++ = r;
 }
 
