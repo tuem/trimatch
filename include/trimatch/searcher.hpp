@@ -33,6 +33,7 @@ template<class text, class integer, class trie, class approximate_matcher>
 class index<text, integer, trie, approximate_matcher>::search_client
 {
 public:
+	using prefix_search_iterator = typename trie::prefix_iterator;
 	using predictive_search_iterator = typename trie::traversal_iterator;
 	using approximate_search_result = std::pair<text, integer>;
 	using approximate_predictive_search_result = std::tuple<text, integer, integer>;
@@ -43,6 +44,9 @@ public:
 
 	// exact match
 	bool exact(const text& query) const;
+
+	// common prefix search
+	prefix_search_iterator prefix(const text& query);
 
 	// predictive search
 	predictive_search_iterator predict(const text& query);
@@ -184,6 +188,13 @@ template<class text, class integer, class trie, class approximate_matcher>
 bool index<text, integer, trie, approximate_matcher>::search_client::exact(const text& query) const
 {
 	return T.exists(query);
+}
+
+template<class text, class integer, class trie, class approximate_matcher>
+typename index<text, integer, trie, approximate_matcher>::search_client::prefix_search_iterator
+index<text, integer, trie, approximate_matcher>::search_client::prefix(const text& query)
+{
+	return trie_search_client.prefix(query);
 }
 
 template<class text, class integer, class trie, class approximate_matcher>

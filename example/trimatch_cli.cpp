@@ -73,10 +73,15 @@ int main(int argc, char* argv[])
 			break;
 
 		auto last = query.back();
-		if(last == '*' || last == '?' || last == '&')
+		if(last == '%' || last == '*' || last == '?' || last == '&')
 			query.pop_back();
 		integer count = 0;
-		if(last == '*'){
+		if(last == '%'){
+			// common prefix search
+			for(const auto& p: searcher.prefix(query))
+				std::cout << std::setw(4) << ++count << ": " << p << std::endl;
+		}
+		else if(last == '*'){
 			// predictive search
 			for(const auto& t: searcher.predict(query))
 				std::cout << std::setw(4) << ++count << ": " << t << std::endl;
