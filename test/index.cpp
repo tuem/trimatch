@@ -31,11 +31,11 @@ TEST_CASE("corpus only consists of an empty string / exact matching", "[exact]")
 	auto searcher = index.searcher();
 
 	SECTION("exact matching (will be succeeded)"){
-		REQUIRE(searcher.exact(""));
+		CHECK(searcher.exact(""));
 	}
 	SECTION("exact matching (will be failed)"){
-		REQUIRE_FALSE(searcher.exact("A"));
-		REQUIRE_FALSE(searcher.exact("BC"));
+		CHECK_FALSE(searcher.exact("A"));
+		CHECK_FALSE(searcher.exact("BC"));
 	}
 }
 
@@ -50,17 +50,17 @@ TEST_CASE("tiny corpus / exact matching", "[exact]"){
 	auto searcher = index.searcher();
 
 	SECTION("exact matching (will be succeeded)"){
-		REQUIRE(searcher.exact("A"));
-		REQUIRE(searcher.exact("B"));
-		REQUIRE(searcher.exact("C"));
+		CHECK(searcher.exact("A"));
+		CHECK(searcher.exact("B"));
+		CHECK(searcher.exact("C"));
 	}
 	SECTION("exact matching (will be failed)"){
-		REQUIRE_FALSE(searcher.exact(""));
-		REQUIRE_FALSE(searcher.exact("X"));
-		REQUIRE_FALSE(searcher.exact("AA"));
-		REQUIRE_FALSE(searcher.exact("AB"));
-		REQUIRE_FALSE(searcher.exact("CB"));
-		REQUIRE_FALSE(searcher.exact("ABC"));
+		CHECK_FALSE(searcher.exact(""));
+		CHECK_FALSE(searcher.exact("X"));
+		CHECK_FALSE(searcher.exact("AA"));
+		CHECK_FALSE(searcher.exact("AB"));
+		CHECK_FALSE(searcher.exact("CB"));
+		CHECK_FALSE(searcher.exact("ABC"));
 	}
 }
 
@@ -79,16 +79,16 @@ TEST_CASE("small corpus / exact matching", "[exact]"){
 
 	SECTION("exact matching (will be succeeded)"){
 		for(const auto& t: texts)
-			REQUIRE(searcher.exact(t));
+			CHECK(searcher.exact(t));
 	}
 	SECTION("exact matching (will be failed)"){
-		REQUIRE_FALSE(searcher.exact(""));
-		REQUIRE_FALSE(searcher.exact("C"));
-		REQUIRE_FALSE(searcher.exact("A"));
-		REQUIRE_FALSE(searcher.exact("M"));
-		REQUIRE_FALSE(searcher.exact("CA"));
-		REQUIRE_FALSE(searcher.exact("MD"));
-		REQUIRE_FALSE(searcher.exact("AMP"));
-		REQUIRE_FALSE(searcher.exact("CMD"));
+		CHECK_FALSE(searcher.exact(""));
+		CHECK_FALSE(searcher.exact("C"));
+		CHECK_FALSE(searcher.exact("A"));
+		CHECK_FALSE(searcher.exact("M"));
+		CHECK_FALSE(searcher.exact("CA"));
+		CHECK_FALSE(searcher.exact("MD"));
+		CHECK_FALSE(searcher.exact("AMP"));
+		CHECK_FALSE(searcher.exact("CMD"));
 	}
 }
