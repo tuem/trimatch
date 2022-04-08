@@ -39,7 +39,7 @@ clean:
 	$(RM) $(OBJS) $(DEPS) $(BINS)
 
 
-REPORTER=junit
+REPORTER=console
 
 test: $(BINS)
 	./main -s -r $(REPORTER)

@@ -30,9 +30,13 @@ TEST_CASE("corpus only consists of an empty string / exact matching", "[exact]")
 	auto index = trimatch::build(texts.begin(), texts.end());
 	auto searcher = index.searcher();
 
-	REQUIRE(searcher.exact(""));
-	REQUIRE_FALSE(searcher.exact("A"));
-	REQUIRE_FALSE(searcher.exact("BC"));
+	SECTION("exact matching (will be succeeded)"){
+		REQUIRE(searcher.exact(""));
+	}
+	SECTION("exact matching (will be failed)"){
+		REQUIRE_FALSE(searcher.exact("A"));
+		REQUIRE_FALSE(searcher.exact("BC"));
+	}
 }
 
 TEST_CASE("tiny corpus / exact matching", "[exact]"){
@@ -45,15 +49,19 @@ TEST_CASE("tiny corpus / exact matching", "[exact]"){
 	auto index = trimatch::build(texts.begin(), texts.end());
 	auto searcher = index.searcher();
 
-	REQUIRE(searcher.exact("A"));
-	REQUIRE(searcher.exact("B"));
-	REQUIRE(searcher.exact("C"));
-	REQUIRE_FALSE(searcher.exact(""));
-	REQUIRE_FALSE(searcher.exact("X"));
-	REQUIRE_FALSE(searcher.exact("AA"));
-	REQUIRE_FALSE(searcher.exact("AB"));
-	REQUIRE_FALSE(searcher.exact("CB"));
-	REQUIRE_FALSE(searcher.exact("ABC"));
+	SECTION("exact matching (will be succeeded)"){
+		REQUIRE(searcher.exact("A"));
+		REQUIRE(searcher.exact("B"));
+		REQUIRE(searcher.exact("C"));
+	}
+	SECTION("exact matching (will be failed)"){
+		REQUIRE_FALSE(searcher.exact(""));
+		REQUIRE_FALSE(searcher.exact("X"));
+		REQUIRE_FALSE(searcher.exact("AA"));
+		REQUIRE_FALSE(searcher.exact("AB"));
+		REQUIRE_FALSE(searcher.exact("CB"));
+		REQUIRE_FALSE(searcher.exact("ABC"));
+	}
 }
 
 TEST_CASE("small corpus / exact matching", "[exact]"){
@@ -69,15 +77,18 @@ TEST_CASE("small corpus / exact matching", "[exact]"){
 	auto index = trimatch::build(texts.begin(), texts.end());
 	auto searcher = index.searcher();
 
-	for(const auto& t: texts)
-		REQUIRE(searcher.exact(t));
-
-	REQUIRE_FALSE(searcher.exact(""));
-	REQUIRE_FALSE(searcher.exact("C"));
-	REQUIRE_FALSE(searcher.exact("A"));
-	REQUIRE_FALSE(searcher.exact("M"));
-	REQUIRE_FALSE(searcher.exact("CA"));
-	REQUIRE_FALSE(searcher.exact("MD"));
-	REQUIRE_FALSE(searcher.exact("AMP"));
-	REQUIRE_FALSE(searcher.exact("CMD"));
+	SECTION("exact matching (will be succeeded)"){
+		for(const auto& t: texts)
+			REQUIRE(searcher.exact(t));
+	}
+	SECTION("exact matching (will be failed)"){
+		REQUIRE_FALSE(searcher.exact(""));
+		REQUIRE_FALSE(searcher.exact("C"));
+		REQUIRE_FALSE(searcher.exact("A"));
+		REQUIRE_FALSE(searcher.exact("M"));
+		REQUIRE_FALSE(searcher.exact("CA"));
+		REQUIRE_FALSE(searcher.exact("MD"));
+		REQUIRE_FALSE(searcher.exact("AMP"));
+		REQUIRE_FALSE(searcher.exact("CMD"));
+	}
 }
