@@ -61,7 +61,7 @@ public:
 	template<typename input_stream> integer load(input_stream& is);
 
 private:
-	const std::size_t num_texts;
+	std::size_t num_texts;
 	std::vector<element> data;
 
 private:
@@ -99,8 +99,10 @@ set_basic<text, integer>::set_basic(random_access_iterator begin, random_access_
 template<typename text, typename integer>
 template<typename input_stream>
 set_basic<text, integer>::set_basic(input_stream& is, integer min_binary_search):
-	num_texts(load(is)), min_binary_search(min_binary_search)
-{}
+	min_binary_search(min_binary_search)
+{
+	num_texts = load(is);
+}
 
 template<typename text, typename integer>
 std::size_t set_basic<text, integer>::size() const
