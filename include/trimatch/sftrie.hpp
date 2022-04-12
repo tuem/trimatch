@@ -21,6 +21,7 @@ limitations under the License.
 #define SFTRIE_SET_BASIC_HPP
 
 #include <vector>
+#include <fstream>
 
 #include <sftrie/util.hpp>
 
@@ -49,6 +50,7 @@ public:
 		integer min_binary_search = 42);
 	template<typename input_stream> set_basic(input_stream& is,
 		integer min_binary_search = 42);
+	set_basic(std::string path, integer min_binary_search = 42);
 
 	std::size_t size() const;
 	std::size_t node_size() const;
@@ -102,6 +104,14 @@ set_basic<text, integer>::set_basic(input_stream& is, integer min_binary_search)
 	min_binary_search(min_binary_search)
 {
 	num_texts = load(is);
+}
+
+template<typename text, typename integer>
+set_basic<text, integer>::set_basic(std::string path, integer min_binary_search):
+	min_binary_search(min_binary_search)
+{
+	std::ifstream ifs(path);
+	num_texts = load(ifs);
 }
 
 template<typename text, typename integer>
