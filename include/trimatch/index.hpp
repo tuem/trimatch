@@ -49,6 +49,7 @@ public:
 	index(const random_accessible_container& texts);
 	template<typename input_stream>
 	index(input_stream& is);
+	index(std::string path);
 
 	search_client searcher() const;
 
@@ -83,6 +84,11 @@ index<text, integer, trie, approximate_matcher>::index(input_stream& is):
 {}
 
 template<class text, class integer, class trie, class approximate_matcher>
+index<text, integer, trie, approximate_matcher>::index(std::string path):
+	T(path)
+{}
+
+template<class text, class integer, class trie, class approximate_matcher>
 template<class output_stream>
 void index<text, integer, trie, approximate_matcher>::save(output_stream& os) const
 {
@@ -92,8 +98,7 @@ void index<text, integer, trie, approximate_matcher>::save(output_stream& os) co
 template<class text, class integer, class trie, class approximate_matcher>
 void index<text, integer, trie, approximate_matcher>::save(std::string path) const
 {
-	std::ofstream ofs(path);
-	save(ofs);
+	T.save(path);
 }
 
 template<class text, class integer, class trie, class approximate_matcher>
