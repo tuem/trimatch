@@ -47,6 +47,8 @@ public:
 	template<typename random_access_iterator>
 	set_basic(random_access_iterator begin, random_access_iterator end,
 		integer min_binary_search = 42);
+	template<typename input_stream> set_basic(input_stream& is,
+		integer min_binary_search = 42);
 
 	std::size_t size() const;
 	std::size_t node_size() const;
@@ -56,9 +58,10 @@ public:
 	common_searcher searcher() const;
 	const std::vector<element>& raw_data() const;
 	template<typename output_stream> void dump(output_stream& os);
+	template<typename input_stream> void load(input_stream& is);
 
 private:
-	const std::size_t num_texts;
+	std::size_t num_texts;
 
 public:
 	std::vector<element> data;
@@ -93,6 +96,14 @@ set_basic<text, integer>::set_basic(random_access_iterator begin, random_access_
 	construct(begin, end, 0, 0);
 	data.push_back({false, false, container_size<integer>(data), {}});
 	data.shrink_to_fit();
+}
+
+template<typename text, typename integer>
+template<typename input_stream>
+set_basic<text, integer>::set_basic(input_stream& is, integer min_binary_search):
+	num_texts(0), data(1, {false, false, 1, {}}), min_binary_search(min_binary_search)
+{
+	load(is);
 }
 
 template<typename text, typename integer>
@@ -160,7 +171,22 @@ void set_basic<text, integer>::dump(output_stream& os)
 		0,
 	};
 	os.write(reinterpret_cast<char*>(&header), static_cast<std::streamsize>(sizeof(sftrie::file_header)));
+
 	os.write(reinterpret_cast<char*>(data.data()), static_cast<std::streamsize>(sizeof(element) * data.size()));
+}
+
+template<typename text, typename integer>
+template<typename input_stream>
+void set_basic<text, integer>::load(input_stream& is)
+{
+	file_header header;
+	is.read(reinterpret_cast<char*>(&header), static_cast<std::streamsize>(sizeof(sftrie::file_header)));
+
+	data.reserve(header.node_count);
+	is.read(reinterpret_cast<char*>(data.data()), static_cast<std::streamsize>(sizeof(element) * header.node_count));
+	num_texts = std::count_if(data.begin(), data.end(), [](const auto& n){
+		return n.match;
+	});
 }
 
 template<typename text, typename integer>
