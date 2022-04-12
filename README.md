@@ -1,8 +1,8 @@
-# Trimatch: An (Exact|Predictive|Approximate) String Matching Library
+# Trimatch: Trie-based (Exact|Predictive|Approximate) String Matching Library
 
 ## Usage
 
-1. Copy [include/trimatch](include/trimatch) to your include path
+1. Add [include](include) and [external/stfrie/include](external/sftrie/include) to your include path
 
 2. Include header
 ```c++
@@ -16,7 +16,7 @@ std::vector<std::string> texts; // you can also use wstring, u16string, u32strin
 auto index = trimatch::build(texts);
 ```
 
-4. Search queries
+4. Search from index
 ```c++
 std::string query = "...";
 auto searcher = index.searcher();
