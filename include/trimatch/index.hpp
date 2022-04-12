@@ -47,8 +47,13 @@ public:
 	index(random_access_iterator begin, random_access_iterator end);
 	template<typename random_accessible_container>
 	index(const random_accessible_container& texts);
+	template<typename input_stream>
+	index(input_stream& is);
 
 	search_client searcher() const;
+
+	template<typename output_stream>
+	void save(output_stream& os) const;
 
 private:
 	const trie T;
@@ -68,6 +73,14 @@ index<text, integer, trie, approximate_matcher>::index(
 	const random_accessible_container& texts
 ):
 	T(std::begin(texts), std::end(texts))
+{}
+
+template<class text, class integer, class trie, class approximate_matcher>
+template<class input_stream>
+index<text, integer, trie, approximate_matcher>::index(
+	input_stream& is
+):
+	T(is)
 {}
 
 template<class text, class integer, class trie, class approximate_matcher>
@@ -102,6 +115,18 @@ template<
 index<text, integer, trie> build(const random_accessible_container& texts)
 {
 	return index<text, integer, trie, approximate_matcher>(texts);
+}
+
+template<
+	class input_stream,
+	class text,
+	class integer,
+	class trie = sftrie::set<text, integer>,
+	class approximate_matcher = LevenshteinDFA<text, integer>
+>
+index<text, integer, trie> build(input_stream& is)
+{
+	return index<text, integer, trie, approximate_matcher>(is);
 }
 
 
