@@ -55,7 +55,7 @@ public:
 	bool exists(const text& pattern) const;
 	common_searcher searcher() const;
 	const std::vector<element>& raw_data() const;
-	file_header file_header() const;
+	template<typename output_stream> void dump(output_stream& os);
 
 private:
 	const std::size_t num_texts;
@@ -140,24 +140,27 @@ set_basic<text, integer>::raw_data() const
 }
 
 template<typename text, typename integer>
-file_header set_basic<text, integer>::file_header() const
+template<typename output_stream>
+void set_basic<text, integer>::dump(output_stream& os)
 {
-	return {
-        {constants::signature[0], constants::signature[1], constants::signature[2], constants::signature[3]},
-        sizeof(sftrie::file_header),
-        sftrie::constants::current_major_version,
-        sftrie::constants::current_minor_version,
+	file_header header = {
+		{constants::signature[0], constants::signature[1], constants::signature[2], constants::signature[3]},
+		sizeof(sftrie::file_header),
+		sftrie::constants::current_major_version,
+		sftrie::constants::current_minor_version,
 		container_type,
 		index_type,
 		text_charset<text>(),
 		text_encoding<text>(),
 		integer_type<integer>(),
-        sizeof(element),
-        0,
-        0,
-        data.size(),
-        0,
-    };
+		sizeof(element),
+		0,
+		0,
+		data.size(),
+		0,
+	};
+	os.write(reinterpret_cast<char*>(&header), static_cast<std::streamsize>(sizeof(sftrie::file_header)));
+	os.write(reinterpret_cast<char*>(data.data()), static_cast<std::streamsize>(sizeof(element) * data.size()));
 }
 
 template<typename text, typename integer>
