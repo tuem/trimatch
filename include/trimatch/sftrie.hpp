@@ -21,13 +21,17 @@ limitations under the License.
 #define SFTRIE_SET_BASIC_HPP
 
 #include <vector>
+#include <fstream>
 
 #include <sftrie/util.hpp>
+
+#include "sftrie_constants.hpp"
+#include "sftrie_header.hpp"
 
 namespace sftrie{
 
 template<typename text, typename integer>
-class set_basic
+class set_basic: public constants
 {
 public:
 	using symbol = typename text::value_type;
@@ -37,10 +41,16 @@ public:
 	struct traversal_iterator;
 	struct prefix_iterator;
 
+	static const std::uint8_t container_type;
+	static const std::uint8_t index_type;
+
 public:
 	template<typename random_access_iterator>
 	set_basic(random_access_iterator begin, random_access_iterator end,
 		integer min_binary_search = 42);
+	template<typename input_stream> set_basic(input_stream& is,
+		integer min_binary_search = 42);
+	set_basic(std::string path, integer min_binary_search = 42);
 
 	std::size_t size() const;
 	std::size_t node_size() const;
@@ -50,10 +60,16 @@ public:
 	common_searcher searcher() const;
 	const std::vector<element>& raw_data() const;
 
-private:
-	const std::size_t num_texts;
+	template<typename output_stream>
+	void save(output_stream& os) const;
+	void save(std::string os) const;
 
-public:
+	template<typename input_stream>
+	integer load(input_stream& is);
+	integer load(std::string path);
+
+private:
+	std::size_t num_texts;
 	std::vector<element> data;
 
 private:
@@ -86,6 +102,22 @@ set_basic<text, integer>::set_basic(random_access_iterator begin, random_access_
 	construct(begin, end, 0, 0);
 	data.push_back({false, false, container_size<integer>(data), {}});
 	data.shrink_to_fit();
+}
+
+template<typename text, typename integer>
+template<typename input_stream>
+set_basic<text, integer>::set_basic(input_stream& is, integer min_binary_search):
+	min_binary_search(min_binary_search)
+{
+	num_texts = load(is);
+}
+
+template<typename text, typename integer>
+set_basic<text, integer>::set_basic(std::string path, integer min_binary_search):
+	min_binary_search(min_binary_search)
+{
+	std::ifstream ifs(path);
+	num_texts = load(ifs);
 }
 
 template<typename text, typename integer>
@@ -130,6 +162,60 @@ const std::vector<typename set_basic<text, integer>::element>&
 set_basic<text, integer>::raw_data() const
 {
 	return data;
+}
+
+template<typename text, typename integer>
+template<typename output_stream>
+void set_basic<text, integer>::save(output_stream& os) const
+{
+	file_header header = {
+		{constants::signature[0], constants::signature[1], constants::signature[2], constants::signature[3]},
+		sizeof(sftrie::file_header),
+		sftrie::constants::current_major_version,
+		sftrie::constants::current_minor_version,
+		container_type,
+		index_type,
+		text_charset<text>(),
+		text_encoding<text>(),
+		integer_type<integer>(),
+		sizeof(element),
+		0,
+		0,
+		data.size(),
+		0,
+	};
+	os.write(reinterpret_cast<const char*>(&header), static_cast<std::streamsize>(sizeof(sftrie::file_header)));
+
+	os.write(reinterpret_cast<const char*>(data.data()), static_cast<std::streamsize>(sizeof(element) * data.size()));
+}
+
+template<typename text, typename integer>
+void set_basic<text, integer>::save(std::string path) const
+{
+	std::ofstream ofs(path);
+	save(ofs);
+}
+
+template<typename text, typename integer>
+template<typename input_stream>
+integer set_basic<text, integer>::load(input_stream& is)
+{
+	file_header header;
+	is.read(reinterpret_cast<char*>(&header), static_cast<std::streamsize>(sizeof(sftrie::file_header)));
+
+	data.resize(header.node_count);
+	is.read(reinterpret_cast<char*>(data.data()), static_cast<std::streamsize>(sizeof(element) * header.node_count));
+
+	return std::count_if(data.begin(), data.end(), [](const auto& n){
+		return n.match;
+	});
+}
+
+template<typename text, typename integer>
+integer set_basic<text, integer>::load(std::string path)
+{
+	std::ifstream ifs(path);
+	return load(path);
 }
 
 template<typename text, typename integer>
@@ -341,6 +427,10 @@ struct set_basic<text, integer>::prefix_iterator
 		return *this;
 	}
 };
+
+template<typename text, typename integer> const std::uint8_t set_basic<text, integer>::container_type = constants::container_type_set;
+template<typename text, typename integer> const std::uint8_t set_basic<text, integer>::index_type = constants::index_type_basic;
+
 
 template<typename text = std::string,
 	typename integer = typename text::size_type>

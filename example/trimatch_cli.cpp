@@ -19,7 +19,7 @@ limitations under the License.
 
 /*
 Text search program using trimatch.
-Usage: trimatch_cli corpus_path [max_edits=1]
+Usage: trimatch_cli input_path [max_edits=1]
 If a query ends with '*' or '?', predictive search or approximate search will be done, respectively.
 */
 
@@ -32,45 +32,65 @@ If a query ends with '*' or '?', predictive search or approximate search will be
 
 
 using text = std::string;
-using integer = text::size_type;
+using integer = std::uint32_t;
+using index_type = trimatch::index<text, integer>;
 
 
 int main(int argc, char* argv[])
 {
 	if(argc < 2){
-		std::cerr << "usage: " << argv[0] << " corpus_path [max_edits=1]" << std::endl;
+		std::cerr << "usage: " << argv[0] << " input_path [max_edits=1] [load_index=false]" << std::endl;
 		return 0;
 	}
 
-	std::string corpus_path = argv[1];
+	std::string input_path = argv[1];
 	int max_edits = argc >= 3 ? std::stoi(argv[2]) : 2;
+	bool load_index = argc >= 4 && std::string(argv[3]) == "true";
 
-	std::vector<text> texts;
-	std::ifstream ifs(corpus_path);
-
-	std::cerr << "loading...";
-	if(!ifs.is_open()){
-		std::cerr << "input file is not available: " << corpus_path << std::endl;
-		return 1;
+	std::shared_ptr<index_type> index;
+	if(load_index){
+		std::cerr << "loadinag index...";
+		index = std::make_shared<index_type>(input_path);
+		std::cerr << "done." << std::endl;
 	}
-	while(ifs.good()){
-		std::string line;
-		std::getline(ifs, line);
-		if(ifs.eof())
-			break;
-		texts.push_back(line);
-	}
-	sftrie::sort_texts(std::begin(texts), std::end(texts));
-	std::cerr << "done." << std::endl;
+	else{
+		std::vector<text> texts;
+		std::ifstream ifs(input_path);
 
-	auto index = trimatch::build(texts);
-	auto searcher = index.searcher();
+		std::cerr << "loading texts...";
+		if(!ifs.is_open()){
+			std::cerr << "input file is not available: " << input_path << std::endl;
+			return 1;
+		}
+		while(ifs.good()){
+			std::string line;
+			std::getline(ifs, line);
+			if(ifs.eof())
+				break;
+			texts.push_back(line);
+		}
+		sftrie::sort_texts(texts.begin(), texts.end());
+		std::cerr << "done." << std::endl;
+
+		std::cerr << "building index...";
+		index = std::make_shared<index_type>(texts.begin(), texts.end());
+		std::cerr << "done." << std::endl;
+	}
+
+	auto searcher = index->searcher();
 	while(true){
 		std::cerr << "> ";
 		std::string query;
 		std::getline(std::cin, query);
-		if(std::cin.eof() || query == "exit" || query == "quit" || query == "bye")
+		if(std::cin.eof() || query == "exit" || query == "quit" || query == "bye"){
 			break;
+		}
+		else if(query.substr(0, 5) == "save="){
+			std::string output_path = query.substr(5);
+			index->save(output_path);
+			std::cout << "index saved to " << output_path << std::endl;
+			continue;
+		}
 
 		auto last = query.back();
 		if(last == '%' || last == '*' || last == '?' || last == '&')
