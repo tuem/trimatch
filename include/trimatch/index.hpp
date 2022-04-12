@@ -54,6 +54,7 @@ public:
 
 	template<typename output_stream>
 	void save(output_stream& os) const;
+	void save(std::string path) const;
 
 private:
 	const trie T;
@@ -77,11 +78,23 @@ index<text, integer, trie, approximate_matcher>::index(
 
 template<class text, class integer, class trie, class approximate_matcher>
 template<class input_stream>
-index<text, integer, trie, approximate_matcher>::index(
-	input_stream& is
-):
+index<text, integer, trie, approximate_matcher>::index(input_stream& is):
 	T(is)
 {}
+
+template<class text, class integer, class trie, class approximate_matcher>
+template<class output_stream>
+void index<text, integer, trie, approximate_matcher>::save(output_stream& os) const
+{
+	T.save(os);
+}
+
+template<class text, class integer, class trie, class approximate_matcher>
+void index<text, integer, trie, approximate_matcher>::save(std::string path) const
+{
+	std::ofstream ofs(path);
+	save(ofs);
+}
 
 template<class text, class integer, class trie, class approximate_matcher>
 typename index<text, integer, trie, approximate_matcher>::search_client
