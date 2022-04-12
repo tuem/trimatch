@@ -62,8 +62,6 @@ public:
 
 private:
 	const std::size_t num_texts;
-
-public:
 	std::vector<element> data;
 
 private:
