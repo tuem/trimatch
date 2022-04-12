@@ -107,47 +107,42 @@ template<typename T> const std::uint8_t _constants<T>::value_type_int64 = 7;
 using constants = _constants<void>;
 
 
-template<typename text>
-struct _text_constants
-{
-	static const std::uint8_t text_charset;
-	static const std::uint8_t text_encoding;
-};
+template<typename text> std::uint8_t text_charset();
 
-template<> const std::uint8_t _text_constants<std::u16string>::text_charset = constants::text_charset_unicode;
-template<> const std::uint8_t _text_constants<std::u32string>::text_charset = constants::text_charset_unicode;
+template<> std::uint8_t text_charset<std::string>(){ return constants::text_charset_system_default; }
+template<> std::uint8_t text_charset<std::u16string>(){ return constants::text_charset_unicode; }
+template<> std::uint8_t text_charset<std::u32string>(){ return constants::text_charset_unicode; }
 
 
-template<typename integer>
-struct _integer_constants
-{
-	static const std::uint8_t integer_type;
-};
+template<typename text> std::uint8_t text_encoding();
 
-template<> const std::uint8_t _integer_constants<std::uint8_t>::integer_type = constants::integer_type_uint8;
-template<> const std::uint8_t _integer_constants<std::int8_t>::integer_type = constants::integer_type_int8;
-template<> const std::uint8_t _integer_constants<std::uint16_t>::integer_type = constants::integer_type_uint16;
-template<> const std::uint8_t _integer_constants<std::int16_t>::integer_type = constants::integer_type_int16;
-template<> const std::uint8_t _integer_constants<std::uint32_t>::integer_type = constants::integer_type_uint32;
-template<> const std::uint8_t _integer_constants<std::int32_t>::integer_type = constants::integer_type_int32;
-template<> const std::uint8_t _integer_constants<std::uint64_t>::integer_type = constants::integer_type_uint64;
-template<> const std::uint8_t _integer_constants<std::int64_t>::integer_type = constants::integer_type_int64;
+template<> std::uint8_t text_encoding<std::string>(){ return constants::text_encoding_system_default; }
+template<> std::uint8_t text_encoding<std::u16string>(){ return constants::text_encoding_utf16; }
+template<> std::uint8_t text_encoding<std::u32string>(){ return constants::text_encoding_utf32; }
 
 
-template<typename integer>
-struct _value_constants
-{
-	static const std::uint8_t value_type;
-};
+template<typename integer> std::uint8_t integer_type();
 
-template<> const std::uint8_t _value_constants<std::uint8_t>::value_type = constants::value_type_uint8;
-template<> const std::uint8_t _value_constants<std::int8_t>::value_type = constants::value_type_int8;
-template<> const std::uint8_t _value_constants<std::uint16_t>::value_type = constants::value_type_uint16;
-template<> const std::uint8_t _value_constants<std::int16_t>::value_type = constants::value_type_int16;
-template<> const std::uint8_t _value_constants<std::uint32_t>::value_type = constants::value_type_uint32;
-template<> const std::uint8_t _value_constants<std::int32_t>::value_type = constants::value_type_int32;
-template<> const std::uint8_t _value_constants<std::uint64_t>::value_type = constants::value_type_uint64;
-template<> const std::uint8_t _value_constants<std::int64_t>::value_type = constants::value_type_int64;
+template<> std::uint8_t integer_type<std::uint8_t>(){ return constants::integer_type_uint8; }
+template<> std::uint8_t integer_type<std::int8_t>(){ return constants::integer_type_int8; }
+template<> std::uint8_t integer_type<std::uint16_t>(){ return constants::integer_type_uint16; }
+template<> std::uint8_t integer_type<std::int16_t>(){ return constants::integer_type_int16; }
+template<> std::uint8_t integer_type<std::uint32_t>(){ return constants::integer_type_uint32; }
+template<> std::uint8_t integer_type<std::int32_t>(){ return constants::integer_type_int32; }
+template<> std::uint8_t integer_type<std::uint64_t>(){ return constants::integer_type_uint64; }
+template<> std::uint8_t integer_type<std::int64_t>(){ return constants::integer_type_int64; }
+
+
+template<typename value> std::uint8_t value_type();
+
+template<> std::uint8_t value_type<std::uint8_t>(){ return constants::value_type_uint8; }
+template<> std::uint8_t value_type<std::int8_t>(){ return constants::value_type_int8; }
+template<> std::uint8_t value_type<std::uint16_t>(){ return constants::value_type_uint16; }
+template<> std::uint8_t value_type<std::int16_t>(){ return constants::value_type_int16; }
+template<> std::uint8_t value_type<std::uint32_t>(){ return constants::value_type_uint32; }
+template<> std::uint8_t value_type<std::int32_t>(){ return constants::value_type_int32; }
+template<> std::uint8_t value_type<std::uint64_t>(){ return constants::value_type_uint64; }
+template<> std::uint8_t value_type<std::int64_t>(){ return constants::value_type_int64; }
 
 };
 

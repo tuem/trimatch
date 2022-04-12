@@ -30,7 +30,7 @@ limitations under the License.
 namespace sftrie{
 
 template<typename text, typename integer>
-class set_basic: public constants, public _text_constants<text>, public _integer_constants<integer>
+class set_basic: public constants
 {
 public:
 	using symbol = typename text::value_type;
@@ -55,6 +55,7 @@ public:
 	bool exists(const text& pattern) const;
 	common_searcher searcher() const;
 	const std::vector<element>& raw_data() const;
+	file_header file_header() const;
 
 private:
 	const std::size_t num_texts;
@@ -136,6 +137,27 @@ const std::vector<typename set_basic<text, integer>::element>&
 set_basic<text, integer>::raw_data() const
 {
 	return data;
+}
+
+template<typename text, typename integer>
+file_header set_basic<text, integer>::file_header() const
+{
+	return {
+        {constants::signature[0], constants::signature[1], constants::signature[2], constants::signature[3]},
+        sizeof(sftrie::file_header),
+        sftrie::constants::current_major_version,
+        sftrie::constants::current_minor_version,
+		container_type,
+		index_type,
+		text_charset<text>(),
+		text_encoding<text>(),
+		integer_type<integer>(),
+        sizeof(element),
+        0,
+        0,
+        data.size(),
+        0,
+    };
 }
 
 template<typename text, typename integer>
