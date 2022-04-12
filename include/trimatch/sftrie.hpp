@@ -57,8 +57,8 @@ public:
 	bool exists(const text& pattern) const;
 	common_searcher searcher() const;
 	const std::vector<element>& raw_data() const;
-	template<typename output_stream> void dump(output_stream& os);
-	template<typename input_stream> void load(input_stream& is);
+	template<typename output_stream> void save(output_stream& os);
+	template<typename input_stream> integer load(input_stream& is);
 
 private:
 	const std::size_t num_texts;
@@ -148,7 +148,7 @@ set_basic<text, integer>::raw_data() const
 
 template<typename text, typename integer>
 template<typename output_stream>
-void set_basic<text, integer>::dump(output_stream& os)
+void set_basic<text, integer>::save(output_stream& os)
 {
 	file_header header = {
 		{constants::signature[0], constants::signature[1], constants::signature[2], constants::signature[3]},
@@ -173,12 +173,12 @@ void set_basic<text, integer>::dump(output_stream& os)
 
 template<typename text, typename integer>
 template<typename input_stream>
-void set_basic<text, integer>::load(input_stream& is)
+integer set_basic<text, integer>::load(input_stream& is)
 {
 	file_header header;
 	is.read(reinterpret_cast<char*>(&header), static_cast<std::streamsize>(sizeof(sftrie::file_header)));
 
-	data.reserve(header.node_count);
+	data.resize(header.node_count);
 	is.read(reinterpret_cast<char*>(data.data()), static_cast<std::streamsize>(sizeof(element) * header.node_count));
 
 	return std::count_if(data.begin(), data.end(), [](const auto& n){
