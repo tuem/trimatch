@@ -61,7 +61,7 @@ public:
 	template<typename input_stream> void load(input_stream& is);
 
 private:
-	std::size_t num_texts;
+	const std::size_t num_texts;
 
 public:
 	std::vector<element> data;
@@ -101,10 +101,8 @@ set_basic<text, integer>::set_basic(random_access_iterator begin, random_access_
 template<typename text, typename integer>
 template<typename input_stream>
 set_basic<text, integer>::set_basic(input_stream& is, integer min_binary_search):
-	num_texts(0), data(1, {false, false, 1, {}}), min_binary_search(min_binary_search)
-{
-	load(is);
-}
+	num_texts(load(is)), min_binary_search(min_binary_search)
+{}
 
 template<typename text, typename integer>
 std::size_t set_basic<text, integer>::size() const
@@ -184,7 +182,8 @@ void set_basic<text, integer>::load(input_stream& is)
 
 	data.reserve(header.node_count);
 	is.read(reinterpret_cast<char*>(data.data()), static_cast<std::streamsize>(sizeof(element) * header.node_count));
-	num_texts = std::count_if(data.begin(), data.end(), [](const auto& n){
+
+	return std::count_if(data.begin(), data.end(), [](const auto& n){
 		return n.match;
 	});
 }
