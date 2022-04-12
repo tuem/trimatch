@@ -24,10 +24,13 @@ limitations under the License.
 
 #include <sftrie/util.hpp>
 
+#include "sftrie_constants.hpp"
+#include "sftrie_header.hpp"
+
 namespace sftrie{
 
 template<typename text, typename integer>
-class set_basic
+class set_basic: public constants, public _text_constants<text>, public _integer_constants<integer>
 {
 public:
 	using symbol = typename text::value_type;
@@ -36,6 +39,9 @@ public:
 	struct common_searcher;
 	struct traversal_iterator;
 	struct prefix_iterator;
+
+	static const std::uint8_t container_type;
+	static const std::uint8_t index_type;
 
 public:
 	template<typename random_access_iterator>
@@ -341,6 +347,10 @@ struct set_basic<text, integer>::prefix_iterator
 		return *this;
 	}
 };
+
+template<typename text, typename integer> const std::uint8_t set_basic<text, integer>::container_type = constants::container_type_set;
+template<typename text, typename integer> const std::uint8_t set_basic<text, integer>::index_type = constants::index_type_basic;
+
 
 template<typename text = std::string,
 	typename integer = typename text::size_type>
