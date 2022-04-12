@@ -57,7 +57,7 @@ public:
 	bool exists(const text& pattern) const;
 	common_searcher searcher() const;
 	const std::vector<element>& raw_data() const;
-	template<typename output_stream> void save(output_stream& os);
+	template<typename output_stream> void save(output_stream& os) const;
 	template<typename input_stream> integer load(input_stream& is);
 
 private:
@@ -150,7 +150,7 @@ set_basic<text, integer>::raw_data() const
 
 template<typename text, typename integer>
 template<typename output_stream>
-void set_basic<text, integer>::save(output_stream& os)
+void set_basic<text, integer>::save(output_stream& os) const
 {
 	file_header header = {
 		{constants::signature[0], constants::signature[1], constants::signature[2], constants::signature[3]},
@@ -168,9 +168,9 @@ void set_basic<text, integer>::save(output_stream& os)
 		data.size(),
 		0,
 	};
-	os.write(reinterpret_cast<char*>(&header), static_cast<std::streamsize>(sizeof(sftrie::file_header)));
+	os.write(reinterpret_cast<const char*>(&header), static_cast<std::streamsize>(sizeof(sftrie::file_header)));
 
-	os.write(reinterpret_cast<char*>(data.data()), static_cast<std::streamsize>(sizeof(element) * data.size()));
+	os.write(reinterpret_cast<const char*>(data.data()), static_cast<std::streamsize>(sizeof(element) * data.size()));
 }
 
 template<typename text, typename integer>
