@@ -59,8 +59,14 @@ public:
 	bool exists(const text& pattern) const;
 	common_searcher searcher() const;
 	const std::vector<element>& raw_data() const;
-	template<typename output_stream> void save(output_stream& os) const;
-	template<typename input_stream> integer load(input_stream& is);
+
+	template<typename output_stream>
+	void save(output_stream& os) const;
+	void save(std::string os) const;
+
+	template<typename input_stream>
+	integer load(input_stream& is);
+	integer load(std::string path);
 
 private:
 	std::size_t num_texts;
@@ -184,6 +190,13 @@ void set_basic<text, integer>::save(output_stream& os) const
 }
 
 template<typename text, typename integer>
+void set_basic<text, integer>::save(std::string path) const
+{
+	std::ofstream ofs(path);
+	save(ofs);
+}
+
+template<typename text, typename integer>
 template<typename input_stream>
 integer set_basic<text, integer>::load(input_stream& is)
 {
@@ -196,6 +209,13 @@ integer set_basic<text, integer>::load(input_stream& is)
 	return std::count_if(data.begin(), data.end(), [](const auto& n){
 		return n.match;
 	});
+}
+
+template<typename text, typename integer>
+integer set_basic<text, integer>::load(std::string path)
+{
+	std::ifstream ifs(path);
+	return load(path);
 }
 
 template<typename text, typename integer>
