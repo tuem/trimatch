@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-BINS = benchmark validate
+BINS = benchmark validate save_load
 
 all: $(BINS)
 
@@ -35,6 +35,9 @@ benchmark: benchmark.o string_util.o history.o
 	$(CXX) -o $@ $^
 
 validate: validate.o string_util.o history.o
+	$(CXX) -o $@ $^
+
+save_load: save_load.o string_util.o history.o
 	$(CXX) -o $@ $^
 
 
