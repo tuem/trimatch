@@ -37,6 +37,7 @@ public:
 	using symbol = typename text::value_type;
 
 	struct element;
+	struct child_iterator;
 	struct common_searcher;
 	struct traversal_iterator;
 	struct prefix_iterator;
@@ -53,6 +54,10 @@ public:
 	std::size_t node_size() const;
 	std::size_t trie_size() const;
 	std::size_t space() const;
+
+	constexpr integer root() const;
+	child_iterator children(integer i = 0) const;
+
 	bool exists(const text& pattern) const;
 	common_searcher searcher() const;
 	const std::vector<element>& raw_data() const;
@@ -139,6 +144,18 @@ template<typename text, typename integer>
 std::size_t set_basic<text, integer>::space() const
 {
 	return sizeof(element) * data.size();
+}
+
+template<typename text, typename integer>
+constexpr integer set_basic<text, integer>::root() const
+{
+	return static_cast<integer>(0);
+}
+
+template<typename text, typename integer>
+typename set_basic<text, integer>::child_iterator set_basic<text, integer>::children(integer i) const
+{
+	return child_iterator(*this, i);
 }
 
 template<typename text, typename integer>
@@ -261,6 +278,47 @@ integer set_basic<text, integer>::search(const text& pattern) const
 	}
 	return current;
 }
+
+template<typename text, typename integer>
+struct set_basic<text, integer>::child_iterator
+{
+    const set_basic<text, integer>& trie;
+    const integer last;
+    integer current;
+
+    child_iterator(const set_basic<text, integer>& trie, const integer parent):
+        trie(trie),
+        last(trie.data[parent].next < trie.data.size() ? trie.data[trie.data[parent].next].next : trie.data.size()),
+        current(trie.data[parent].next)
+    {}
+
+    child_iterator& begin()
+    {
+        return *this;
+    }
+
+    child_iterator end() const
+    {
+        return child_iterator(trie, trie.data.size() - 1);
+    }
+
+    bool operator!=(const child_iterator& i) const
+    {
+        return current >= last ?
+            !(i.current >= last) :
+            !(current == i.current);
+    }
+
+    void operator++()
+    {
+        ++current;
+    }
+
+    const element& operator*() const
+    {
+        return trie.data[current];
+    }
+};
 
 template<typename text, typename integer>
 struct set_basic<text, integer>::common_searcher
