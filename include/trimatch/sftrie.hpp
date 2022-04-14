@@ -31,7 +31,7 @@ limitations under the License.
 namespace sftrie{
 
 template<typename text, typename integer>
-class set_basic: public constants
+class set_basic
 {
 public:
 	using symbol = typename text::value_type;
@@ -40,9 +40,6 @@ public:
 	struct common_searcher;
 	struct traversal_iterator;
 	struct prefix_iterator;
-
-	static const std::uint8_t container_type;
-	static const std::uint8_t index_type;
 
 public:
 	template<typename random_access_iterator>
@@ -170,14 +167,14 @@ void set_basic<text, integer>::save(output_stream& os) const
 {
 	file_header header = {
 		{constants::signature[0], constants::signature[1], constants::signature[2], constants::signature[3]},
-		sizeof(sftrie::file_header),
-		sftrie::constants::current_major_version,
-		sftrie::constants::current_minor_version,
-		container_type,
-		index_type,
-		text_charset<text>(),
-		text_encoding<text>(),
-		integer_type<integer>(),
+		sizeof(file_header),
+		constants::current_major_version,
+		constants::current_minor_version,
+		constants::container_type_set,
+		constants::index_type_basic,
+		constants::text_charset<text>(),
+		constants::text_encoding<text>(),
+		constants::integer_type<integer>(),
 		sizeof(element),
 		0,
 		0,
@@ -427,10 +424,6 @@ struct set_basic<text, integer>::prefix_iterator
 		return *this;
 	}
 };
-
-template<typename text, typename integer> const std::uint8_t set_basic<text, integer>::container_type = constants::container_type_set;
-template<typename text, typename integer> const std::uint8_t set_basic<text, integer>::index_type = constants::index_type_basic;
-
 
 template<typename text = std::string,
 	typename integer = typename text::size_type>
