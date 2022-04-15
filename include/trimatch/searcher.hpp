@@ -89,7 +89,7 @@ struct index<text, integer, trie, approximate_matcher>::search_client::approxima
 
 	approximate_matcher matcher;
 
-	std::vector<integer> path;
+	std::vector<integer> path; // TODO replace with vector<child_iterator>
 	text current;
 
 	approximate_search_iterator(const trie& T, const text& query, integer max_edits):
@@ -228,7 +228,7 @@ void index<text, integer, trie, approximate_matcher>::search_client::approx(
 {
 	approximate_matcher matcher(query, max_edits);
 	text current;
-	approx_step(matcher, 0, current, bi);
+	approx_step(matcher, T.root(), current, bi);
 }
 
 template<class text, class integer, class trie, class approximate_matcher>
@@ -236,14 +236,13 @@ template<class back_insert_iterator>
 void index<text, integer, trie, approximate_matcher>::search_client::approx_step(
 	approximate_matcher& matcher, integer root, text& current, back_insert_iterator& bi) const
 {
-	// TODO: use abstract interface
 	const auto& nodes = T.raw_data();
 	if(nodes[root].match && matcher.matched())
 		*bi++ = std::make_pair(current, static_cast<integer>(matcher.distance()));
 	if(nodes[root].leaf)
 		return;
 	// TODO: after distance() leaches max_distance(), all we need to do is the exact matching process
-	for(integer i = nodes[root].next; i < nodes[nodes[root].next].next; ++i){
+	for(const auto& i: T.children(root)){
 		if(matcher.update(nodes[i].label)){
 			current.push_back(nodes[i].label);
 			approx_step(matcher, i, current, bi);
@@ -260,7 +259,7 @@ void index<text, integer, trie, approximate_matcher>::search_client::approx_pred
 {
 	approximate_matcher matcher(query, max_edits);
 	text current;
-	approx_predict_step(max_edits, matcher, 0, current, bi);
+	approx_predict_step(max_edits, matcher, T.root(), current, bi);
 }
 
 template<class text, class integer, class trie, class approximate_matcher>
@@ -268,7 +267,6 @@ template<class back_insert_iterator>
 void index<text, integer, trie, approximate_matcher>::search_client::approx_predict_step(
 	integer max_edits, approximate_matcher& matcher, integer root, text& current, back_insert_iterator& bi) const
 {
-	// TODO: use abstract interface
 	const auto& nodes = T.raw_data();
 	if(matcher.matched()){
 		correct_approx_predict_results(max_edits, matcher, root, current, matcher.distance(), matcher.distance(), bi);
@@ -277,7 +275,7 @@ void index<text, integer, trie, approximate_matcher>::search_client::approx_pred
 	if(nodes[root].leaf)
 		return;
 	// TODO: after distance() leaches max_distance(), all we need to do is the exact matching process
-	for(integer i = nodes[root].next; i < nodes[nodes[root].next].next; ++i){
+	for(const auto& i: T.children(root)){
 		if(matcher.update(nodes[i].label)){
 			current.push_back(nodes[i].label);
 			approx_predict_step(max_edits, matcher, i, current, bi);
@@ -293,13 +291,12 @@ void index<text, integer, trie, approximate_matcher>::search_client::correct_app
 	integer max_edits, approximate_matcher& matcher, integer root,
 	text& current, integer prefix_edits, integer current_edits, back_insert_iterator& bi) const
 {
-	// TODO: use abstract interface
 	const auto& nodes = T.raw_data();
 	if(nodes[root].match)
 		*bi++ = std::make_tuple(current, std::min(prefix_edits, current_edits), current_edits);
 	if(nodes[root].leaf)
 		return;
-	for(integer i = nodes[root].next; i < nodes[nodes[root].next].next; ++i){
+	for(const auto& i: T.children(root)){
 		current.push_back(nodes[i].label);
 		if(current_edits <= max_edits && current.size() <= matcher.pattern.size() && matcher.update(nodes[i].label)){
 			correct_approx_predict_results(max_edits, matcher, i, current,
