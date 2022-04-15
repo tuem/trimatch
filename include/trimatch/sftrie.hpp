@@ -48,6 +48,9 @@ public:
 	template<typename random_access_iterator>
 	set_basic(random_access_iterator begin, random_access_iterator end,
 		integer min_binary_search = constants::default_min_binary_search<integer>);
+	template<typename random_access_container>
+	set_basic(const random_access_container& texts,
+		integer min_binary_search = constants::default_min_binary_search<integer>);
 	template<typename input_stream> set_basic(input_stream& is,
 		integer min_binary_search = constants::default_min_binary_search<integer>);
 	set_basic(std::string path, integer min_binary_search = constants::default_min_binary_search<integer>);
@@ -85,6 +88,7 @@ private:
 	integer search(const text& pattern) const;
 };
 
+
 #pragma pack(1)
 template<typename text, typename integer>
 struct set_basic<text, integer>::element
@@ -96,6 +100,9 @@ struct set_basic<text, integer>::element
 };
 #pragma pack()
 
+
+// constructors
+
 template<typename text, typename integer>
 template<typename random_access_iterator>
 set_basic<text, integer>::set_basic(random_access_iterator begin, random_access_iterator end,
@@ -104,6 +111,16 @@ set_basic<text, integer>::set_basic(random_access_iterator begin, random_access_
 	min_binary_search(min_binary_search)
 {
 	construct(begin, end, 0, 0);
+	data.push_back({false, false, container_size<integer>(data), {}});
+	data.shrink_to_fit();
+}
+
+template<typename text, typename integer>
+template<typename random_access_container>
+set_basic<text, integer>::set_basic(const random_access_container& texts, integer min_binary_search):
+	num_texts(std::size(texts)), min_binary_search(min_binary_search)
+{
+	construct(std::begin(texts), std::end(texts), 0, 0);
 	data.push_back({false, false, container_size<integer>(data), {}});
 	data.shrink_to_fit();
 }
@@ -123,6 +140,9 @@ set_basic<text, integer>::set_basic(std::string path, integer min_binary_search)
 	std::ifstream ifs(path);
 	num_texts = load(ifs);
 }
+
+
+// public functions
 
 template<typename text, typename integer>
 typename set_basic<text, integer>::size_type set_basic<text, integer>::size() const
@@ -234,6 +254,9 @@ integer set_basic<text, integer>::load(std::string path)
 	return load(path);
 }
 
+
+// private functions
+
 template<typename text, typename integer>
 template<typename iterator>
 void set_basic<text, integer>::construct(iterator begin, iterator end, integer depth, integer current)
@@ -280,6 +303,9 @@ integer set_basic<text, integer>::search(const text& pattern) const
 	}
 	return current;
 }
+
+
+// subclasses
 
 template<typename text, typename integer>
 struct set_basic<text, integer>::child_iterator
