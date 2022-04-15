@@ -55,32 +55,32 @@ public:
 		integer min_binary_search = constants::default_min_binary_search<integer>);
 	set_basic(std::string path, integer min_binary_search = constants::default_min_binary_search<integer>);
 
+	// information
 	size_type size() const;
 	size_type node_size() const;
 	size_type trie_size() const;
 	size_type space() const;
 
-	constexpr integer root() const;
-	child_iterator children(integer i = 0) const;
-
+	// search
 	bool exists(const text& pattern) const;
 	common_searcher searcher() const;
+
+	// tree operations
+	constexpr integer root() const;
+	child_iterator children(integer i = 0) const;
 	const std::vector<element>& raw_data() const;
 
-	template<typename output_stream>
-	void save(output_stream& os) const;
+	// file I/O
+	template<typename output_stream> void save(output_stream& os) const;
 	void save(std::string os) const;
-
-	template<typename input_stream>
-	integer load(input_stream& is);
+	template<typename input_stream> integer load(input_stream& is);
 	integer load(std::string path);
 
 private:
+	const integer min_binary_search;
+
 	size_type num_texts;
 	std::vector<element> data;
-
-private:
-	const integer min_binary_search;
 
 	template<typename iterator>
 	void construct(iterator begin, iterator end, integer depth, integer current);
@@ -107,8 +107,8 @@ template<typename text, typename integer>
 template<typename random_access_iterator>
 set_basic<text, integer>::set_basic(random_access_iterator begin, random_access_iterator end,
 		integer min_binary_search):
-	num_texts(end - begin), data(1, {false, false, 1, {}}),
-	min_binary_search(min_binary_search)
+	min_binary_search(min_binary_search),
+	num_texts(end - begin), data(1, {false, false, 1, {}})
 {
 	construct(begin, end, 0, 0);
 	data.push_back({false, false, container_size<integer>(data), {}});
@@ -118,7 +118,7 @@ set_basic<text, integer>::set_basic(random_access_iterator begin, random_access_
 template<typename text, typename integer>
 template<typename random_access_container>
 set_basic<text, integer>::set_basic(const random_access_container& texts, integer min_binary_search):
-	num_texts(std::size(texts)), min_binary_search(min_binary_search)
+	min_binary_search(min_binary_search), num_texts(std::size(texts))
 {
 	construct(std::begin(texts), std::end(texts), 0, 0);
 	data.push_back({false, false, container_size<integer>(data), {}});
@@ -169,18 +169,6 @@ typename set_basic<text, integer>::size_type set_basic<text, integer>::space() c
 }
 
 template<typename text, typename integer>
-constexpr integer set_basic<text, integer>::root() const
-{
-	return static_cast<integer>(0);
-}
-
-template<typename text, typename integer>
-typename set_basic<text, integer>::child_iterator set_basic<text, integer>::children(integer i) const
-{
-	return child_iterator(*this, i);
-}
-
-template<typename text, typename integer>
 bool set_basic<text, integer>::exists(const text& pattern) const
 {
 	return data[search(pattern)].match;
@@ -191,6 +179,18 @@ typename set_basic<text, integer>::common_searcher
 set_basic<text, integer>::searcher() const
 {
 	return common_searcher(*this);
+}
+
+template<typename text, typename integer>
+constexpr integer set_basic<text, integer>::root() const
+{
+	return static_cast<integer>(0);
+}
+
+template<typename text, typename integer>
+typename set_basic<text, integer>::child_iterator set_basic<text, integer>::children(integer i) const
+{
+	return child_iterator(*this, i);
 }
 
 template<typename text, typename integer>
