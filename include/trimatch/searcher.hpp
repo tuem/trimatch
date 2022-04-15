@@ -257,7 +257,7 @@ void index<text, integer, trie, approximate_matcher>::search_client::approx_pred
 {
 	approximate_matcher matcher(query, max_edits);
 	text current;
-	approx_predict_step(max_edits, matcher, {T, T.root()}, current, bi);
+	approx_predict_step(max_edits, matcher, T.root(), current, bi);
 }
 
 template<class text, class integer, class trie, class approximate_matcher>

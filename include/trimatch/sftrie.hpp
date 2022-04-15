@@ -313,11 +313,6 @@ struct set_basic<text, integer>::virtual_node
 		trie(trie), id(id)
 	{}
 
-	symbol node_id() const
-	{
-		return id;
-	}
-
 	symbol label() const
 	{
 		return trie.data[id].label;
@@ -345,7 +340,6 @@ struct set_basic<text, integer>::child_iterator
 	virtual_node current;
 	const integer last;
 
-	// a special iterator that enumerates the root
 	child_iterator(const set_basic<text, integer>& trie):
 		current(trie, 0), last(1)
 	{}
