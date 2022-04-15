@@ -20,6 +20,7 @@ limitations under the License.
 #ifndef SFTRIE_SET_BASIC_HPP
 #define SFTRIE_SET_BASIC_HPP
 
+#include <cstddef>
 #include <vector>
 #include <fstream>
 
@@ -35,42 +36,53 @@ class set_basic
 {
 public:
 	using symbol = typename text::value_type;
+	using size_type = std::size_t;
 
-	struct element;
+	struct node;
+	struct virtual_node;
+	struct child_iterator;
 	struct common_searcher;
-	struct traversal_iterator;
+	struct subtree_iterator;
 	struct prefix_iterator;
+
+	using node_type = virtual_node;
 
 public:
 	template<typename random_access_iterator>
 	set_basic(random_access_iterator begin, random_access_iterator end,
-		integer min_binary_search = 42);
+		integer min_binary_search = constants::default_min_binary_search<integer>);
+	template<typename random_access_container>
+	set_basic(const random_access_container& texts,
+		integer min_binary_search = constants::default_min_binary_search<integer>);
 	template<typename input_stream> set_basic(input_stream& is,
-		integer min_binary_search = 42);
-	set_basic(std::string path, integer min_binary_search = 42);
+		integer min_binary_search = constants::default_min_binary_search<integer>);
+	set_basic(std::string path, integer min_binary_search = constants::default_min_binary_search<integer>);
 
-	std::size_t size() const;
-	std::size_t node_size() const;
-	std::size_t trie_size() const;
-	std::size_t space() const;
+	// information
+	size_type size() const;
+	size_type node_size() const;
+	size_type trie_size() const;
+	size_type space() const;
+
+	// search
 	bool exists(const text& pattern) const;
 	common_searcher searcher() const;
-	const std::vector<element>& raw_data() const;
 
-	template<typename output_stream>
-	void save(output_stream& os) const;
+	// tree operations
+	node_type root() const;
+	const std::vector<node>& raw_data() const;
+
+	// file I/O
+	template<typename output_stream> void save(output_stream& os) const;
 	void save(std::string os) const;
-
-	template<typename input_stream>
-	integer load(input_stream& is);
+	template<typename input_stream> integer load(input_stream& is);
 	integer load(std::string path);
 
 private:
-	std::size_t num_texts;
-	std::vector<element> data;
-
-private:
 	const integer min_binary_search;
+
+	size_type num_texts;
+	std::vector<node> data;
 
 	template<typename iterator>
 	void construct(iterator begin, iterator end, integer depth, integer current);
@@ -78,9 +90,10 @@ private:
 	integer search(const text& pattern) const;
 };
 
+
 #pragma pack(1)
 template<typename text, typename integer>
-struct set_basic<text, integer>::element
+struct set_basic<text, integer>::node
 {
 	bool match: 1;
 	bool leaf: 1;
@@ -89,14 +102,27 @@ struct set_basic<text, integer>::element
 };
 #pragma pack()
 
+
+// constructors
+
 template<typename text, typename integer>
 template<typename random_access_iterator>
 set_basic<text, integer>::set_basic(random_access_iterator begin, random_access_iterator end,
 		integer min_binary_search):
-	num_texts(end - begin), data(1, {false, false, 1, {}}),
-	min_binary_search(min_binary_search)
+	min_binary_search(min_binary_search),
+	num_texts(end - begin), data(1, {false, false, 1, {}})
 {
 	construct(begin, end, 0, 0);
+	data.push_back({false, false, container_size<integer>(data), {}});
+	data.shrink_to_fit();
+}
+
+template<typename text, typename integer>
+template<typename random_access_container>
+set_basic<text, integer>::set_basic(const random_access_container& texts, integer min_binary_search):
+	min_binary_search(min_binary_search), num_texts(std::size(texts))
+{
+	construct(std::begin(texts), std::end(texts), 0, 0);
 	data.push_back({false, false, container_size<integer>(data), {}});
 	data.shrink_to_fit();
 }
@@ -117,28 +143,31 @@ set_basic<text, integer>::set_basic(std::string path, integer min_binary_search)
 	num_texts = load(ifs);
 }
 
+
+// public functions
+
 template<typename text, typename integer>
-std::size_t set_basic<text, integer>::size() const
+typename set_basic<text, integer>::size_type set_basic<text, integer>::size() const
 {
 	return num_texts;
 }
 
 template<typename text, typename integer>
-std::size_t set_basic<text, integer>::node_size() const
+typename set_basic<text, integer>::size_type set_basic<text, integer>::node_size() const
 {
-	return sizeof(element);
+	return sizeof(node);
 }
 
 template<typename text, typename integer>
-std::size_t set_basic<text, integer>::trie_size() const
+typename set_basic<text, integer>::size_type set_basic<text, integer>::trie_size() const
 {
 	return data.size();
 }
 
 template<typename text, typename integer>
-std::size_t set_basic<text, integer>::space() const
+typename set_basic<text, integer>::size_type set_basic<text, integer>::space() const
 {
-	return sizeof(element) * data.size();
+	return sizeof(node) * data.size();
 }
 
 template<typename text, typename integer>
@@ -155,7 +184,13 @@ set_basic<text, integer>::searcher() const
 }
 
 template<typename text, typename integer>
-const std::vector<typename set_basic<text, integer>::element>&
+typename set_basic<text, integer>::node_type set_basic<text, integer>::root() const
+{
+	return {*this, static_cast<integer>(0)};
+}
+
+template<typename text, typename integer>
+const std::vector<typename set_basic<text, integer>::node>&
 set_basic<text, integer>::raw_data() const
 {
 	return data;
@@ -175,7 +210,7 @@ void set_basic<text, integer>::save(output_stream& os) const
 		constants::text_charset<text>(),
 		constants::text_encoding<text>(),
 		constants::integer_type<integer>(),
-		sizeof(element),
+		sizeof(node),
 		0,
 		0,
 		data.size(),
@@ -183,7 +218,7 @@ void set_basic<text, integer>::save(output_stream& os) const
 	};
 	os.write(reinterpret_cast<const char*>(&header), static_cast<std::streamsize>(sizeof(sftrie::file_header)));
 
-	os.write(reinterpret_cast<const char*>(data.data()), static_cast<std::streamsize>(sizeof(element) * data.size()));
+	os.write(reinterpret_cast<const char*>(data.data()), static_cast<std::streamsize>(sizeof(node) * data.size()));
 }
 
 template<typename text, typename integer>
@@ -201,7 +236,7 @@ integer set_basic<text, integer>::load(input_stream& is)
 	is.read(reinterpret_cast<char*>(&header), static_cast<std::streamsize>(sizeof(sftrie::file_header)));
 
 	data.resize(header.node_count);
-	is.read(reinterpret_cast<char*>(data.data()), static_cast<std::streamsize>(sizeof(element) * header.node_count));
+	is.read(reinterpret_cast<char*>(data.data()), static_cast<std::streamsize>(sizeof(node) * header.node_count));
 
 	return std::count_if(data.begin(), data.end(), [](const auto& n){
 		return n.match;
@@ -214,6 +249,9 @@ integer set_basic<text, integer>::load(std::string path)
 	std::ifstream ifs(path);
 	return load(path);
 }
+
+
+// private functions
 
 template<typename text, typename integer>
 template<typename iterator>
@@ -262,6 +300,100 @@ integer set_basic<text, integer>::search(const text& pattern) const
 	return current;
 }
 
+
+// subclasses
+
+template<typename text, typename integer>
+struct set_basic<text, integer>::virtual_node
+{
+	const set_basic<text, integer>& trie;
+	integer id;
+
+	virtual_node(const set_basic<text, integer>& trie, integer id):
+		trie(trie), id(id)
+	{}
+
+	integer node_id() const
+	{
+		return id;
+	}
+
+	symbol label() const
+	{
+		return trie.data[id].label;
+	}
+
+	bool match() const
+	{
+		return trie.data[id].match;
+	}
+
+	bool leaf() const
+	{
+		return trie.data[id].leaf;
+	}
+
+	child_iterator children() const
+	{
+		return child_iterator(trie, trie.data[id].next, trie.data[trie.data[id].next].next);
+	}
+};
+
+template<typename text, typename integer>
+struct set_basic<text, integer>::child_iterator
+{
+	virtual_node current;
+	const integer last;
+
+	child_iterator(const set_basic<text, integer>& trie):
+		current(trie, 0), last(1)
+	{}
+
+	child_iterator(const set_basic<text, integer>& trie, const integer parent):
+		current(trie, trie.data[parent].next),
+		last(trie.data[parent].next < trie.data.size() ? trie.data[trie.data[parent].next].next : trie.data.size())
+	{}
+
+	child_iterator(const set_basic<text, integer>& trie, integer id, integer last):
+		current(trie, id), last(last)
+	{}
+
+	child_iterator& begin()
+	{
+		return *this;
+	}
+
+	child_iterator end() const
+	{
+		return child_iterator(current.trie, last, last);
+	}
+
+	bool incrementable() const
+	{
+		return current.id < last - 1;
+	}
+
+	bool operator==(const child_iterator& i) const
+	{
+		return current.id == i.current.id;
+	}
+
+	bool operator!=(const child_iterator& i) const
+	{
+		return current.id != i.current.id;
+	}
+
+	void operator++()
+	{
+		++current.id;
+	}
+
+	virtual_node operator*() const
+	{
+		return current;
+	}
+};
+
 template<typename text, typename integer>
 struct set_basic<text, integer>::common_searcher
 {
@@ -287,7 +419,7 @@ struct set_basic<text, integer>::common_searcher
 		return find(pattern) != end() ? 1 : 0;
 	}
 
-	traversal_iterator traverse(const text& pattern)
+	subtree_iterator traverse(const text& pattern)
 	{
 		integer root = index.search(pattern);
 		if(root < index.data.size() - 1){
@@ -296,7 +428,7 @@ struct set_basic<text, integer>::common_searcher
 			path.push_back(root);
 			std::copy(std::begin(pattern), std::end(pattern), std::back_inserter(result));
 		}
-		return traversal_iterator(*this, pattern, root);
+		return subtree_iterator(*this, pattern, root);
 	}
 
 	prefix_iterator prefix(const text& pattern)
@@ -307,30 +439,30 @@ struct set_basic<text, integer>::common_searcher
 };
 
 template<typename text, typename integer>
-struct set_basic<text, integer>::traversal_iterator
+struct set_basic<text, integer>::subtree_iterator
 {
 	common_searcher& searcher;
 	const text& prefix;
 	integer current;
 
-	traversal_iterator(common_searcher& searcher, const text& prefix, integer root):
+	subtree_iterator(common_searcher& searcher, const text& prefix, integer root):
 		searcher(searcher), prefix(prefix), current(root)
 	{
 		if(root < searcher.index.data.size() - 1 && !searcher.index.data[root].match)
 			++*this;
 	}
 
-	traversal_iterator& begin()
+	subtree_iterator& begin()
 	{
 		return *this;
 	}
 
-	traversal_iterator end() const
+	subtree_iterator end() const
 	{
-		return traversal_iterator(searcher, prefix, searcher.index.data.size() - 1);
+		return subtree_iterator(searcher, prefix, searcher.index.data.size() - 1);
 	}
 
-	bool operator!=(const traversal_iterator& i) const
+	bool operator!=(const subtree_iterator& i) const
 	{
 		return this->current != i.current;
 	}
@@ -340,7 +472,7 @@ struct set_basic<text, integer>::traversal_iterator
 		return searcher.result;
 	}
 
-	traversal_iterator& operator++()
+	subtree_iterator& operator++()
 	{
 		do{
 			if(!searcher.index.data[searcher.path.back()].leaf){
