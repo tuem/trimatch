@@ -47,10 +47,10 @@ public:
 public:
 	template<typename random_access_iterator>
 	set_basic(random_access_iterator begin, random_access_iterator end,
-		integer min_binary_search = 42);
+		integer min_binary_search = constants::default_min_binary_search<integer>);
 	template<typename input_stream> set_basic(input_stream& is,
-		integer min_binary_search = 42);
-	set_basic(std::string path, integer min_binary_search = 42);
+		integer min_binary_search = constants::default_min_binary_search<integer>);
+	set_basic(std::string path, integer min_binary_search = constants::default_min_binary_search<integer>);
 
 	size_type size() const;
 	size_type node_size() const;

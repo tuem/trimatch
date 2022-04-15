@@ -26,6 +26,13 @@ namespace sftrie{
 
 namespace constants{
 
+// performance tuning
+
+template<typename integer> inline constexpr integer default_min_binary_search = static_cast<integer>(42);
+
+
+// header values
+
 inline constexpr char signature[4] = {'S', 'F', 'T', 'I'};
 
 inline constexpr std::uint8_t current_major_version = 0;
