@@ -20,6 +20,7 @@ limitations under the License.
 #ifndef SFTRIE_SET_BASIC_HPP
 #define SFTRIE_SET_BASIC_HPP
 
+#include <cstddef>
 #include <vector>
 #include <fstream>
 
@@ -35,6 +36,7 @@ class set_basic
 {
 public:
 	using symbol = typename text::value_type;
+	using size_type = std::size_t;
 
 	struct element;
 	struct child_iterator;
@@ -50,10 +52,10 @@ public:
 		integer min_binary_search = 42);
 	set_basic(std::string path, integer min_binary_search = 42);
 
-	std::size_t size() const;
-	std::size_t node_size() const;
-	std::size_t trie_size() const;
-	std::size_t space() const;
+	size_type size() const;
+	size_type node_size() const;
+	size_type trie_size() const;
+	size_type space() const;
 
 	constexpr integer root() const;
 	child_iterator children(integer i = 0) const;
@@ -71,7 +73,7 @@ public:
 	integer load(std::string path);
 
 private:
-	std::size_t num_texts;
+	size_type num_texts;
 	std::vector<element> data;
 
 private:
@@ -123,25 +125,25 @@ set_basic<text, integer>::set_basic(std::string path, integer min_binary_search)
 }
 
 template<typename text, typename integer>
-std::size_t set_basic<text, integer>::size() const
+typename set_basic<text, integer>::size_type set_basic<text, integer>::size() const
 {
 	return num_texts;
 }
 
 template<typename text, typename integer>
-std::size_t set_basic<text, integer>::node_size() const
+typename set_basic<text, integer>::size_type set_basic<text, integer>::node_size() const
 {
 	return sizeof(element);
 }
 
 template<typename text, typename integer>
-std::size_t set_basic<text, integer>::trie_size() const
+typename set_basic<text, integer>::size_type set_basic<text, integer>::trie_size() const
 {
 	return data.size();
 }
 
 template<typename text, typename integer>
-std::size_t set_basic<text, integer>::space() const
+typename set_basic<text, integer>::size_type set_basic<text, integer>::space() const
 {
 	return sizeof(element) * data.size();
 }
