@@ -320,6 +320,10 @@ struct set_basic<text, integer>::child_iterator
         current(trie.data[parent].next)
     {}
 
+    child_iterator(const set_basic<text, integer>& trie, integer last, integer current):
+        trie(trie), last(last), current(current)
+    {}
+
     child_iterator& begin()
     {
         return *this;
@@ -327,14 +331,12 @@ struct set_basic<text, integer>::child_iterator
 
     child_iterator end() const
     {
-        return child_iterator(trie, trie.data.size() - 1);
+        return child_iterator(trie, last, last);
     }
 
     bool operator!=(const child_iterator& i) const
     {
-        return current >= last ?
-            !(i.current >= last) :
-            !(current == i.current);
+        return current != i.current;
     }
 
     void operator++()
@@ -342,9 +344,9 @@ struct set_basic<text, integer>::child_iterator
         ++current;
     }
 
-    const element& operator*() const
+    const integer operator*() const
     {
-        return trie.data[current];
+        return current;
     }
 };
 
