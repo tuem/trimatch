@@ -41,7 +41,7 @@ public:
 	struct element;
 	struct child_iterator;
 	struct common_searcher;
-	struct traversal_iterator;
+	struct subtree_iterator;
 	struct prefix_iterator;
 
 public:
@@ -347,7 +347,7 @@ struct set_basic<text, integer>::common_searcher
 		return find(pattern) != end() ? 1 : 0;
 	}
 
-	traversal_iterator traverse(const text& pattern)
+	subtree_iterator traverse(const text& pattern)
 	{
 		integer root = index.search(pattern);
 		if(root < index.data.size() - 1){
@@ -356,7 +356,7 @@ struct set_basic<text, integer>::common_searcher
 			path.push_back(root);
 			std::copy(std::begin(pattern), std::end(pattern), std::back_inserter(result));
 		}
-		return traversal_iterator(*this, pattern, root);
+		return subtree_iterator(*this, pattern, root);
 	}
 
 	prefix_iterator prefix(const text& pattern)
@@ -367,30 +367,30 @@ struct set_basic<text, integer>::common_searcher
 };
 
 template<typename text, typename integer>
-struct set_basic<text, integer>::traversal_iterator
+struct set_basic<text, integer>::subtree_iterator
 {
 	common_searcher& searcher;
 	const text& prefix;
 	integer current;
 
-	traversal_iterator(common_searcher& searcher, const text& prefix, integer root):
+	subtree_iterator(common_searcher& searcher, const text& prefix, integer root):
 		searcher(searcher), prefix(prefix), current(root)
 	{
 		if(root < searcher.index.data.size() - 1 && !searcher.index.data[root].match)
 			++*this;
 	}
 
-	traversal_iterator& begin()
+	subtree_iterator& begin()
 	{
 		return *this;
 	}
 
-	traversal_iterator end() const
+	subtree_iterator end() const
 	{
-		return traversal_iterator(searcher, prefix, searcher.index.data.size() - 1);
+		return subtree_iterator(searcher, prefix, searcher.index.data.size() - 1);
 	}
 
-	bool operator!=(const traversal_iterator& i) const
+	bool operator!=(const subtree_iterator& i) const
 	{
 		return this->current != i.current;
 	}
@@ -400,7 +400,7 @@ struct set_basic<text, integer>::traversal_iterator
 		return searcher.result;
 	}
 
-	traversal_iterator& operator++()
+	subtree_iterator& operator++()
 	{
 		do{
 			if(!searcher.index.data[searcher.path.back()].leaf){

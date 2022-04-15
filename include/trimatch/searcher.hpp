@@ -34,7 +34,7 @@ class index<text, integer, trie, approximate_matcher>::search_client
 {
 public:
 	using prefix_search_iterator = typename trie::prefix_iterator;
-	using predictive_search_iterator = typename trie::traversal_iterator;
+	using predictive_search_iterator = typename trie::subtree_iterator;
 	using approximate_search_result = std::pair<text, integer>;
 	using approximate_predictive_search_result = std::tuple<text, integer, integer>;
 
