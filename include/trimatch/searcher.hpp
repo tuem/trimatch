@@ -96,7 +96,7 @@ struct index<text, integer, trie, approximate_matcher>::search_client::approxima
 		T(T), query(query), max_edits(max_edits), matcher(query, max_edits)
 	{
 		if(!query.empty()){
-			path.push_back(typename trie::child_iterator(T, T.root(), T.root()));
+			path.push_back(typename trie::child_iterator(T));
 			++*this;
 		}
 	}
@@ -227,7 +227,7 @@ void index<text, integer, trie, approximate_matcher>::search_client::approx(
 {
 	approximate_matcher matcher(query, max_edits);
 	text current;
-	approx_step(matcher, {T, T.root()}, current, bi);
+	approx_step(matcher, T.root(), current, bi);
 }
 
 template<class text, class integer, class trie, class approximate_matcher>

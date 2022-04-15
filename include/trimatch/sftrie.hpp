@@ -69,8 +69,7 @@ public:
 	common_searcher searcher() const;
 
 	// tree operations
-	static constexpr integer root();
-	child_iterator children(integer i = root()) const;
+	node_type root() const;
 	const std::vector<node>& raw_data() const;
 
 	// file I/O
@@ -185,15 +184,9 @@ set_basic<text, integer>::searcher() const
 }
 
 template<typename text, typename integer>
-static constexpr integer set_basic<text, integer>::root()
+typename set_basic<text, integer>::node_type set_basic<text, integer>::root() const
 {
-	return static_cast<integer>(0);
-}
-
-template<typename text, typename integer>
-typename set_basic<text, integer>::child_iterator set_basic<text, integer>::children(integer i) const
-{
-	return child_iterator(*this, i);
+	return {*this, static_cast<integer>(0)};
 }
 
 template<typename text, typename integer>
@@ -351,6 +344,11 @@ struct set_basic<text, integer>::child_iterator
 {
 	virtual_node current;
 	const integer last;
+
+	// a special iterator that enumerates the root
+	child_iterator(const set_basic<text, integer>& trie):
+		current(trie, 0), last(1)
+	{}
 
 	child_iterator(const set_basic<text, integer>& trie, const integer parent):
 		current(trie, trie.data[parent].next),
