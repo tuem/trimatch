@@ -66,8 +66,8 @@ public:
 	common_searcher searcher() const;
 
 	// tree operations
-	constexpr integer root() const;
-	child_iterator children(integer i = 0) const;
+	static constexpr integer root();
+	child_iterator children(integer i = root()) const;
 	const std::vector<element>& raw_data() const;
 
 	// file I/O
@@ -182,7 +182,7 @@ set_basic<text, integer>::searcher() const
 }
 
 template<typename text, typename integer>
-constexpr integer set_basic<text, integer>::root() const
+static constexpr integer set_basic<text, integer>::root()
 {
 	return static_cast<integer>(0);
 }
