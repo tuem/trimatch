@@ -313,6 +313,11 @@ struct set_basic<text, integer>::virtual_node
 		trie(trie), id(id)
 	{}
 
+	integer node_id() const
+	{
+		return id;
+	}
+
 	symbol label() const
 	{
 		return trie.data[id].label;
