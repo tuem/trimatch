@@ -310,44 +310,59 @@ integer set_basic<text, integer>::search(const text& pattern) const
 template<typename text, typename integer>
 struct set_basic<text, integer>::child_iterator
 {
-    const set_basic<text, integer>& trie;
-    const integer last;
-    integer current;
+	const set_basic<text, integer>& trie;
+	const integer last;
+	integer current;
 
-    child_iterator(const set_basic<text, integer>& trie, const integer parent):
-        trie(trie),
-        last(trie.data[parent].next < trie.data.size() ? trie.data[trie.data[parent].next].next : trie.data.size()),
-        current(trie.data[parent].next)
-    {}
+	child_iterator(const set_basic<text, integer>& trie, const integer parent):
+		trie(trie),
+		last(trie.data[parent].next < trie.data.size() ? trie.data[trie.data[parent].next].next : trie.data.size()),
+		current(trie.data[parent].next)
+	{}
 
-    child_iterator(const set_basic<text, integer>& trie, integer last, integer current):
-        trie(trie), last(last), current(current)
-    {}
+	child_iterator(const set_basic<text, integer>& trie, integer last, integer current):
+		trie(trie), last(last), current(current)
+	{}
 
-    child_iterator& begin()
-    {
-        return *this;
-    }
+	child_iterator& begin()
+	{
+		return *this;
+	}
 
-    child_iterator end() const
-    {
-        return child_iterator(trie, last, last);
-    }
+	child_iterator end() const
+	{
+		return child_iterator(trie, last, last);
+	}
 
-    bool operator!=(const child_iterator& i) const
-    {
-        return current != i.current;
-    }
+	bool incrementable() const
+	{
+		return current < last - 1;
+	}
 
-    void operator++()
-    {
-        ++current;
-    }
+	bool operator==(const child_iterator& i) const
+	{
+		return current == i.current;
+	}
 
-    const integer operator*() const
-    {
-        return current;
-    }
+	bool operator!=(const child_iterator& i) const
+	{
+		return current != i.current;
+	}
+
+	void operator++()
+	{
+		++current;
+	}
+
+	const integer operator*() const
+	{
+		return current;
+	}
+
+	child_iterator children(integer c) const
+	{
+		return child_iterator(trie, c);
+	}
 };
 
 template<typename text, typename integer>
