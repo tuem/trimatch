@@ -115,7 +115,6 @@ struct set_tail<text, integer>::node
 
 // constructors
 
-// TODO
 template<typename text, typename integer>
 template<typename random_access_iterator>
 set_tail<text, integer>::set_tail(random_access_iterator begin, random_access_iterator end,
@@ -362,7 +361,7 @@ struct set_tail<text, integer>::virtual_node
 	integer id;
 	integer tail_pos;
 
-	virtual_node(const set_tail<text, integer>& trie, integer id, integer tail_pos):
+	virtual_node(const set_tail<text, integer>& trie, integer id, integer tail_pos = 0):
 		trie(trie), id(id), tail_pos(tail_pos)
 	{}
 
@@ -371,24 +370,38 @@ struct set_tail<text, integer>::virtual_node
 		return id;
 	}
 
+	integer tail() const
+	{
+		return trie.data[id].tail;
+	}
+
 	symbol label() const
 	{
-		return trie.data[id].label;
+		if(tail_pos == 0)
+			return trie.data[id].label;
+		else
+			return trie.tails[trie.data[id].tail + tail_pos - 1];
 	}
 
 	bool match() const
 	{
-		return trie.data[id].match; // TODO
+		if(tail_pos == 0)
+			return trie.data[id].match;
+		else
+			return trie.data[id].tail + tail_pos == trie.data[id + 1].tail;
 	}
 
 	bool leaf() const
 	{
-		return trie.data[id].leaf; // TODO
+		return trie.data[id].leaf && trie.data[id].tail + tail_pos == trie.data[id + 1].tail;
 	}
 
 	child_iterator children() const
 	{
-		return child_iterator(trie, trie.data[id].next, trie.data[trie.data[id].next].next); // TODO
+		if(!trie.data[id].leaf)
+			return child_iterator(trie, id);
+		else
+			return child_iterator(trie, id, id + 1, tail_pos + 1);
 	}
 };
 
@@ -398,20 +411,17 @@ struct set_tail<text, integer>::child_iterator
 	virtual_node current;
 	const integer last;
 
-	// TODO
 	child_iterator(const set_tail<text, integer>& trie):
 		current(trie, 0, 0), last(1)
 	{}
 
-	// TODO
 	child_iterator(const set_tail<text, integer>& trie, const integer parent):
 		current(trie, trie.data[parent].next, 0),
 		last(trie.data[parent].next < trie.data.size() ? trie.data[trie.data[parent].next].next : trie.data.size())
 	{}
 
-	// TODO
-	child_iterator(const set_tail<text, integer>& trie, integer id, integer last):
-		current(trie, id, 0), last(last)
+	child_iterator(const set_tail<text, integer>& trie, integer id, integer last, integer tail_pos = 0):
+		current(trie, id, tail_pos), last(last)
 	{}
 
 	child_iterator& begin()
@@ -421,22 +431,22 @@ struct set_tail<text, integer>::child_iterator
 
 	child_iterator end() const
 	{
-		return child_iterator(current.trie, last, last);
+		return child_iterator(current.trie, last, last, current.tail_pos);
 	}
 
 	bool incrementable() const
 	{
-		return current.id < last - 1;
+		return current.id + 1 < last;
 	}
 
 	bool operator==(const child_iterator& i) const
 	{
-		return current.id == i.current.id;
+		return current.id == i.current.id && current.tail_pos == i.current.tail_pos;
 	}
 
 	bool operator!=(const child_iterator& i) const
 	{
-		return current.id != i.current.id;
+		return current.id != i.current.id || current.tail_pos != i.current.tail_pos;
 	}
 
 	void operator++()
@@ -444,7 +454,7 @@ struct set_tail<text, integer>::child_iterator
 		++current.id;
 	}
 
-	virtual_node operator*() const
+	virtual_node& operator*()
 	{
 		return current;
 	}
@@ -685,13 +695,6 @@ struct set_tail<text, integer>::prefix_iterator
 		return *this;
 	}
 };
-
-
-/*
-template<typename text = std::string,
-	typename integer = typename text::size_type>
-using set = set_tail<text, integer>;
-*/
 
 };
 

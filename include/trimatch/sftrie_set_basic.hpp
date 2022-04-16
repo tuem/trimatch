@@ -388,7 +388,7 @@ struct set_basic<text, integer>::child_iterator
 		++current.id;
 	}
 
-	virtual_node operator*() const
+	virtual_node& operator*()
 	{
 		return current;
 	}
@@ -556,10 +556,6 @@ struct set_basic<text, integer>::prefix_iterator
 		return *this;
 	}
 };
-
-template<typename text = std::string,
-	typename integer = typename text::size_type>
-using set = set_basic<text, integer>;
 
 };
 
