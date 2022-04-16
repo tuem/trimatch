@@ -39,7 +39,7 @@ limitations under the License.
 
 using text = std::u32string;
 using symbol = typename text::value_type;
-using integer = typename text::size_type;
+using integer = std::uint32_t;
 
 
 template<typename text, typename integer>
@@ -101,7 +101,7 @@ size_t exec_approx_dfa_trie(const sftrie::set<text, integer>& trie,
 	return found;
 }
 
-template<typename text>
+template<typename text, typename integer>
 bool benchmark(const std::string& corpus_path, const std::string& algorithm, size_t max_edits)
 {
 	using symbol = typename text::value_type;
@@ -184,13 +184,13 @@ bool benchmark(const std::string& corpus_path, const std::string& algorithm, siz
 		found_approx = exec_approx_dp(texts, shuffled_queries, max_edits);
 	}
 	else if(algorithm == "dp-trie"){
-		found_approx = exec_approx_dp_trie(index, shuffled_queries, max_edits);
+		found_approx = exec_approx_dp_trie<text, integer>(index, shuffled_queries, max_edits);
 	}
 	else if(algorithm == "bp"){
 		found_approx = exec_approx_bp(texts, shuffled_queries, max_edits);
 	}
 	else if(algorithm == "dfa-trie"){
-		found_approx = exec_approx_dfa_trie(index, shuffled_queries, max_edits);
+		found_approx = exec_approx_dfa_trie<text, integer>(index, shuffled_queries, max_edits);
 	}
 	else{
 		throw std::runtime_error("input file is not available: " + algorithm);
@@ -239,5 +239,5 @@ int main(int argc, char* argv[])
 	std::string algorithm= argv[2];
 	integer max_edits = std::atoi(argv[3]);
 
-	benchmark<text>(corpus_path, algorithm, max_edits);
+	benchmark<text, integer>(corpus_path, algorithm, max_edits);
 }
