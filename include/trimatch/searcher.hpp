@@ -128,7 +128,7 @@ struct index<text, integer, trie, approximate_matcher>::search_client::approxima
 		matcher.back();
 	}
 
-	bool try_transition(const typename trie::child_iterator& next)
+	bool try_transition(typename trie::child_iterator& next)
 	{
 		auto c = (*next).label();
 		auto result = matcher.update(c);
