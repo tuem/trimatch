@@ -40,6 +40,7 @@ limitations under the License.
 using text = std::u32string;
 using symbol = typename text::value_type;
 using integer = std::uint32_t;
+template<typename text, typename integer> using sftrie_set = sftrie::set_basic<text, integer>;
 
 
 template<typename text, typename integer>
@@ -70,12 +71,36 @@ size_t exec_approx_bp(const std::vector<text>& texts,
 	return found;
 }
 
+template<typename text, typename integer, typename approximate_matcher>
+size_t exec_approx_matcher(const std::vector<text>& texts,
+	const std::vector<text>& queries, integer max_edits = 1)
+{
+	size_t found = 0;
+	for(const auto& q: queries){
+		approximate_matcher matcher(q, max_edits);
+		for(const auto& t: texts){
+			typename text::size_type i = 0;
+			for(;i < t.size(); ++i){
+				if(!matcher.update(t[i])){
+					--i;
+					goto END;
+				}
+			}
+			if(i == t.size() && matcher.matched())
+				++found;
+			END:;
+			matcher.reset();
+		}
+	}
+	return found;
+}
+
 template<typename text, typename integer>
-size_t exec_approx_dp_trie(const sftrie::set<text, integer>& trie,
+size_t exec_approx_dp_trie(const sftrie_set<text, integer>& trie,
 	const std::vector<text>& queries, integer max_edits = 1)
 {
 	// since trie is already built, directly create searcher without trimatch::index
-	trimatch::searcher<text, integer, sftrie::set<text, integer>, OnlineEditDistance<text, integer>> searcher(trie);
+	trimatch::searcher<text, integer, sftrie_set<text, integer>, OnlineEditDistance<text, integer>> searcher(trie);
 	std::vector<std::pair<text, integer>> results;
 	size_t found = 0;
 	for(const auto& query: queries){
@@ -87,10 +112,10 @@ size_t exec_approx_dp_trie(const sftrie::set<text, integer>& trie,
 }
 
 template<typename text, typename integer>
-size_t exec_approx_dfa_trie(const sftrie::set<text, integer>& trie,
+size_t exec_approx_dfa_trie(const sftrie_set<text, integer>& trie,
 	const std::vector<text>& queries, integer max_edits = 1)
 {
-	trimatch::searcher<text, integer> searcher(trie);
+	trimatch::searcher<text, integer, sftrie_set<text, integer>> searcher(trie);
 	std::vector<std::pair<text, integer>> results;
 	size_t found = 0;
 	for(const auto& query: queries){
@@ -170,7 +195,7 @@ bool benchmark(const std::string& corpus_path, const std::string& algorithm, siz
 	size_t found_approx = 0;
 	std::cerr << "constructing index...";
 	history.refresh();
-	sftrie::set<text, integer> index(std::begin(texts), std::end(texts));
+	sftrie_set<text, integer> index(std::begin(texts), std::end(texts));
 	history.record("construction", texts.size());
 	std::cerr << "done." << std::endl;
 
@@ -180,14 +205,20 @@ bool benchmark(const std::string& corpus_path, const std::string& algorithm, siz
 
 	std::cerr << "approximate search...";
 	history.refresh();
-	if(algorithm == "dp"){
+	if(algorithm == "dp-batch"){
 		found_approx = exec_approx_dp(texts, shuffled_queries, max_edits);
+	}
+	else if(algorithm == "bp-batch"){
+		found_approx = exec_approx_bp(texts, shuffled_queries, max_edits);
+	}
+	else if(algorithm == "dp-online"){
+		found_approx = exec_approx_matcher<text, integer, OnlineEditDistance<text, integer>>(texts, shuffled_queries, max_edits);
+	}
+	else if(algorithm == "dfa-online"){
+		found_approx = exec_approx_matcher<text, integer, trimatch::LevenshteinDFA<text, integer>>(texts, shuffled_queries, max_edits);
 	}
 	else if(algorithm == "dp-trie"){
 		found_approx = exec_approx_dp_trie<text, integer>(index, shuffled_queries, max_edits);
-	}
-	else if(algorithm == "bp"){
-		found_approx = exec_approx_bp(texts, shuffled_queries, max_edits);
 	}
 	else if(algorithm == "dfa-trie"){
 		found_approx = exec_approx_dfa_trie<text, integer>(index, shuffled_queries, max_edits);
@@ -231,7 +262,7 @@ int main(int argc, char* argv[])
 {
 	if(argc < 4){
 		std::cout << "usage: " << argv[0] << " corpus_path algorithm max_edits" << std::endl;
-		std::cout << "  algorithm: (dp|bp|dp-trie|dfa-trie)" << std::endl;
+		std::cout << "  algorithm: (dp-batch|bp-batch|dp-online|dfa-online|dp-trie|dfa-trie)" << std::endl;
 		return 0;
 	}
 

@@ -54,6 +54,7 @@ public:
 	bool update(symbol c);
 	bool matched() const;
 	void back();
+	void reset();
 	integer max_distance() const;
 	integer distance() const;
 
@@ -180,6 +181,14 @@ inline void LevenshteinDFA<text, integer>::back()
 {
 	if(current_states.size() > 1)
 		current_states.pop_back();
+}
+
+template<typename text, typename integer>
+inline void LevenshteinDFA<text, integer>::reset()
+{
+	auto front = current_states.front();
+	current_states.clear();
+	current_states.push_back(front);
 }
 
 template<typename text, typename integer>

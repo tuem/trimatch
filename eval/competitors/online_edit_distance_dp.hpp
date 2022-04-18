@@ -61,6 +61,11 @@ public:
 			--i;
 	}
 
+	void reset()
+	{
+		i = 0;
+	}
+
 private:
 	std::vector<std::vector<integer>> D;
 	integer i;
