@@ -22,7 +22,7 @@ limitations under the License.
 #include <trimatch/index.hpp>
 
 
-TEST_CASE("index / exact matching / corpus consists of an empty string", "[exact]"){
+TEST_CASE("index / exact matching / dictionary consists of an empty string", "[index][exact]"){
 	std::vector<std::string> texts = {
 		""
 	};
@@ -39,7 +39,7 @@ TEST_CASE("index / exact matching / corpus consists of an empty string", "[exact
 	}
 }
 
-TEST_CASE("index / exact matching / tiny dictionary", "[exact]"){
+TEST_CASE("index / exact matching / tiny dictionary", "[index][exact]"){
 	std::vector<std::string> texts = {
 		"B",
 		"D",
@@ -66,7 +66,7 @@ TEST_CASE("index / exact matching / tiny dictionary", "[exact]"){
 	}
 }
 
-TEST_CASE("index / exact matching / small dictionary", "[exact]"){
+TEST_CASE("index / exact matching / small dictionary", "[index][exact]"){
 	std::vector<std::string> texts = {
 		"AM",
 		"AMD",

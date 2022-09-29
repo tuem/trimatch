@@ -27,7 +27,7 @@ limitations under the License.
 #include <trimatch/index.hpp>
 
 
-TEST_CASE("searcher / small corpus", "[exact,prefix]"){
+TEST_CASE("searcher / small dictionary / exact matching", "[index][exact]"){
 	std::vector<std::string> texts = {
 		"A",
 		"AM",
@@ -58,6 +58,27 @@ TEST_CASE("searcher / small corpus", "[exact,prefix]"){
 		CHECK_FALSE(searcher.exact("CDA"));
 		CHECK_FALSE(searcher.exact("FM"));
 	}
+}
+
+TEST_CASE("searcher / small dictionary / prefix search", "[index][prefix]"){
+	std::vector<std::string> texts = {
+		"A",
+		"AM",
+		"AMD",
+		"AMP",
+		"CAD",
+		"CA",
+		"CAM",
+		"CAMP",
+		"CM",
+		"CMD",
+		"DM",
+		"MD",
+	};
+	sftrie::sort_texts(texts.begin(), texts.end());
+
+	auto index = trimatch::build(texts.begin(), texts.end());
+	auto searcher = index.searcher();
 
 	SECTION("prefix search (empty query)"){
 		std::string query = "";
@@ -83,6 +104,27 @@ TEST_CASE("searcher / small corpus", "[exact,prefix]"){
 			results.insert(result);
 		CHECK(results.size() == 0);
 	}
+}
+
+TEST_CASE("searcher / small dictionary / predictive search", "[index][predict]"){
+	std::vector<std::string> texts = {
+		"A",
+		"AM",
+		"AMD",
+		"AMP",
+		"CAD",
+		"CA",
+		"CAM",
+		"CAMP",
+		"CM",
+		"CMD",
+		"DM",
+		"MD",
+	};
+	sftrie::sort_texts(texts.begin(), texts.end());
+
+	auto index = trimatch::build(texts.begin(), texts.end());
+	auto searcher = index.searcher();
 
 	SECTION("predictive search (empty query)"){
 		std::string query = "";
@@ -118,6 +160,27 @@ TEST_CASE("searcher / small corpus", "[exact,prefix]"){
 		searcher.predict(query, std::back_inserter(results));
 		CHECK(results.size() == 0);
 	}
+}
+
+TEST_CASE("searcher / small dictionary / approximate search", "[index][approx]"){
+	std::vector<std::string> texts = {
+		"A",
+		"AM",
+		"AMD",
+		"AMP",
+		"CAD",
+		"CA",
+		"CAM",
+		"CAMP",
+		"CM",
+		"CMD",
+		"DM",
+		"MD",
+	};
+	sftrie::sort_texts(texts.begin(), texts.end());
+
+	auto index = trimatch::build(texts.begin(), texts.end());
+	auto searcher = index.searcher();
 
 	SECTION("approximate match (empty query)"){
 		std::string query = "";
@@ -151,11 +214,15 @@ TEST_CASE("searcher / small corpus", "[exact,prefix]"){
 		CHECK(std::get<0>(results[4]) == std::string("MD"));
 		CHECK(std::get<1>(results[4]) == 1);
 	}
-	SECTION("approximate match(will be failed)"){
+	SECTION("approximate match (different minimum edits)"){
 		std::string query = "CORP";
 		std::vector<std::pair<std::string, unsigned long>> results;
 
 		searcher.approx(query, 1, std::back_inserter(results));
 		CHECK(results.size() == 0);
+
+		results.clear();
+		searcher.approx(query, 2, std::back_inserter(results));
+		CHECK(results.size() == 1);
 	}
 }
