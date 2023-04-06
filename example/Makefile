@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-BINS = trimatch_cli
+BINS = trimatch_cli trimatch_cli_map
 
 all: $(BINS)
 
@@ -32,6 +32,9 @@ DEPS = $(patsubst %.cpp,%.d,$(SRCS))
 
 
 trimatch_cli: trimatch_cli.o
+	$(CXX) -o $@ $^
+
+trimatch_cli_map: trimatch_cli_map`.o
 	$(CXX) -o $@ $^
 
 
