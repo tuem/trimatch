@@ -26,7 +26,7 @@ Controller for tries and searchers
 
 #include <iterator>
 
-#include "sftrie_map.hpp"
+#include <sftrie/map.hpp>
 #include "levenshtein_dfa.hpp"
 
 namespace trimatch

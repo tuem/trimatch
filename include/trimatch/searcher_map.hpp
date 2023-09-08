@@ -149,7 +149,7 @@ struct index_map<text, item, integer, trie, approximate_matcher>::search_client:
 				auto next = (*path.back()).children(); // first child
 				transition_succeeded = try_transition(next);
 			}
-			else if(!transition_succeeded && path.size() > 1 && path.back().incrementable()){
+			else if(!transition_succeeded && path.size() > 1 && path.back() != path.back().end()){
 				auto next = path.back();
 				++next; // next sibling
 				path.pop_back();
@@ -162,7 +162,7 @@ struct index_map<text, item, integer, trie, approximate_matcher>::search_client:
 					current.pop_back();
 				}
 
-				while(path.size() > 1 && !path.back().incrementable())
+				while(path.size() > 1 && path.back() != path.back().end())
 					back_transition();
 				if(path.size() > 1){
 					auto next = path.back();
@@ -203,7 +203,7 @@ template<class text, class item, class integer, class trie, class approximate_ma
 typename index_map<text, item, integer, trie, approximate_matcher>::search_client::predictive_search_iterator
 index_map<text, item, integer, trie, approximate_matcher>::search_client::predict(const text& query)
 {
-	return trie_search_client.traverse(query);
+	return trie_search_client.predict(query);
 }
 
 template<class text, class item, class integer, class trie, class approximate_matcher>
@@ -212,7 +212,7 @@ void index_map<text, item, integer, trie, approximate_matcher>::search_client::p
 	const text& query, back_insert_iterator bi) const
 {
 	typename trie::common_searcher searcher(T);
-	for(const auto& r: searcher.traverse(query))
+	for(const auto& r: searcher.predict(query))
 		*bi++ = r;
 }
 
