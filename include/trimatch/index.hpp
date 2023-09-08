@@ -24,6 +24,7 @@ Controller for tries and searchers
 #ifndef TRIMATCH_INDEX
 #define TRIMATCH_INDEX
 
+#include <cstddef>
 #include <iterator>
 
 #include <sftrie/set.hpp>
@@ -34,7 +35,7 @@ namespace trimatch
 
 template<
 	class text,
-	class integer,
+	class integer = std::uint32_t,
 	class trie = sftrie::set<text, integer>,
 	class approximate_matcher = LevenshteinDFA<text, integer>
 >
@@ -114,7 +115,7 @@ index<text, integer, trie, approximate_matcher>::searcher() const
 template<
 	class random_access_iterator,
 	class text = typename std::iterator_traits<random_access_iterator>::value_type,
-	class integer = unsigned long,
+	class integer = std::uint32_t,
 	class trie = sftrie::set<text, integer>,
 	class approximate_matcher = LevenshteinDFA<text, integer>
 >
@@ -126,7 +127,7 @@ index<text, integer, trie> build(random_access_iterator begin, random_access_ite
 template<
 	class random_accessible_container,
 	class text = typename random_accessible_container::value_type,
-	class integer = unsigned long,
+	class integer = std::uint32_t,
 	class trie = sftrie::set<text, integer>,
 	class approximate_matcher = LevenshteinDFA<text, integer>
 >
@@ -138,7 +139,7 @@ index<text, integer, trie> build(const random_accessible_container& texts)
 template<
 	class input_stream,
 	class text,
-	class integer,
+	class integer = std::uint32_t,
 	class trie = sftrie::set<text, integer>,
 	class approximate_matcher = LevenshteinDFA<text, integer>
 >
@@ -150,7 +151,7 @@ index<text, integer, trie> build(input_stream& is)
 
 template<
 	class text,
-	class integer,
+	class integer = std::uint32_t,
 	class trie = sftrie::set<text, integer>,
 	class approximate_matcher = LevenshteinDFA<text, integer>
 >
