@@ -39,7 +39,7 @@ limitations under the License.
 
 using text = std::u32string;
 using symbol = typename text::value_type;
-using integer = typename text::size_type;
+using integer = std::uint32_t;
 
 
 template<typename text, typename integer>
@@ -83,9 +83,9 @@ size_t exec_approx_bp(const std::vector<text>& texts,
 	return found;
 }
 
-template<typename text, typename integer>
-size_t exec_approx_dp_trie(const sftrie::set<text, integer>& trie,
-	const std::vector<text>& queries, integer max_edits = 1)
+template<typename set>
+size_t exec_approx_dp_trie(const set& trie,
+	const std::vector<typename set::text_type>& queries, typename set::integer_type max_edits = 1)
 {
 	// since trie is already built, directly create searcher
 	trimatch::searcher<text, integer, sftrie::set<text, integer>, OnlineEditDistance<text, integer>> searcher(trie);
@@ -101,9 +101,9 @@ size_t exec_approx_dp_trie(const sftrie::set<text, integer>& trie,
 	return found;
 }
 
-template<typename text, typename integer>
-size_t exec_approx_dfa_trie(const sftrie::set<text, integer>& trie,
-	const std::vector<text>& queries, integer max_edits = 1)
+template<typename set>
+size_t exec_approx_dfa_trie(const set& trie,
+	const std::vector<typename set::text_type>& queries, typename set::integer_type max_edits = 1)
 {
 	trimatch::searcher<text, integer> searcher(trie);
 	std::vector<std::pair<text, integer>> results;
@@ -183,7 +183,7 @@ bool benchmark(const std::string& corpus_path, const std::string& algorithm, siz
 	history.record("generating queries", queries.size());
 	std::cerr << "done." << std::endl;
 
-	size_t node_size = 0, trie_size =0, space = 0;
+	size_t node_size = 0, trie_size =0, total_space = 0;
 	size_t found_approx = 0;
 	std::cerr << "constructing index...";
 	history.refresh();
@@ -193,7 +193,7 @@ bool benchmark(const std::string& corpus_path, const std::string& algorithm, siz
 
 	node_size = index.node_size();
 	trie_size = index.trie_size();
-	space = index.space();
+	total_space = index.total_space();
 
 	std::cerr << "approximate search...";
 	history.refresh();
@@ -236,7 +236,7 @@ bool benchmark(const std::string& corpus_path, const std::string& algorithm, siz
 	std::cerr << std::left << std::setw(30) << "total bytes" << std::right << std::setw(12) << (sizeof(symbol) * total_length) << std::endl;
 	std::cerr << std::left << std::setw(30) << "node size" << std::right << std::setw(12) << node_size << std::endl;
 	std::cerr << std::left << std::setw(30) << "trie size" << std::right << std::setw(12) << trie_size << std::endl;
-	std::cerr << std::left << std::setw(30) << "index size" << std::right << std::setw(12) << space << std::endl;
+	std::cerr << std::left << std::setw(30) << "index size" << std::right << std::setw(12) << total_space << std::endl;
 	std::cerr << std::endl;
 	std::cerr << "[time]" << std::endl;
 	history.dump(std::cerr);
