@@ -30,10 +30,11 @@ If a query ends with '*' or '?', predictive search or approximate search will be
 
 #include <trimatch/index_map.hpp>
 
+#include <array>
 
 using text = std::string;
 using integer = std::uint32_t;
-using item = std::uint32_t;
+using item = std::array<integer, 2>;
 using index_type = trimatch::index_map<text, item, integer>;
 
 int main(int argc, char* argv[])
@@ -62,15 +63,15 @@ int main(int argc, char* argv[])
 			std::cerr << "input file is not available: " << input_path << std::endl;
 			return 1;
 		}
-		item i = 0;
+		integer i = 0;
 		while(ifs.good()){
 			std::string line;
 			std::getline(ifs, line);
 			if(ifs.eof())
 				break;
-			texts.push_back({line, i++});
+			texts.push_back({line, {i++, 0}});
 		}
-		sftrie::sort_text_object_pairs(texts.begin(), texts.end());
+		sftrie::sort_text_item_pairs(texts.begin(), texts.end());
 		std::cerr << "done." << std::endl;
 
 		std::cerr << "building index...";
@@ -94,22 +95,22 @@ int main(int argc, char* argv[])
 		}
 
 		auto last = query.back();
-		if(last == '%' || last == '*' || last == '?' || last == '&')
+		if(last == '<' || last == '*' || last == '?' || last == '&')
 			query.pop_back();
 		integer count = 0;
-		if(last == '%'){
-			// common prefix search
-			for(const auto& p: searcher.prefix(query))
-				std::cout << std::setw(4) << ++count << ": " << p << std::endl;
+		if(last == '<'){
+			// common-prefix search
+			for(const auto& i: searcher.prefix(query))
+				std::cout << std::setw(4) << ++count << ": key=" << i.key() << ", value=" << i.value()[0] << std::endl;
 		}
 		else if(last == '*'){
 			// predictive search
 			for(auto i: searcher.predict(query))
-				std::cout << std::setw(4) << ++count << ": " << i.value() << std::endl;
+				std::cout << std::setw(4) << ++count << ": key=" << i.key() << ", value=" << i.value()[0] << std::endl;
 		}
 		else if(last == '?'){
 			// approximate search
-			for(auto i: searcher.approx(query, max_edits))
+			for(const auto& i: searcher.approx(query, max_edits))
 				std::cout << std::setw(4) << ++count << ": text=" << std::get<0>(i) << ", distance=" << std::get<2>(i)<< std::endl;
 		}
 		else if(last == '&'){
@@ -117,7 +118,7 @@ int main(int argc, char* argv[])
 			std::vector<std::tuple<text, item, integer, integer>> results;
 			searcher.approx_predict(query, max_edits, std::back_inserter(results));
 			for(const auto& r: results)
-				std::cout << std::setw(4) << ++count << ": text=" << std::get<0>(r) << ", item=" << std::get<1>(r) << ", distance(prefix)=" << std::get<2>(r) << ", distance(whole)=" << std::get<3>(r) << std::endl;
+				std::cout << std::setw(4) << ++count << ": text=" << std::get<0>(r) << ", item=" << std::get<1>(r)[0] << ", distance(prefix)=" << std::get<2>(r) << ", distance(whole)=" << std::get<3>(r) << std::endl;
 		}
 		else{
 			// exact match

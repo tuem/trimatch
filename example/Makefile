@@ -15,13 +15,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-BINS = trimatch_cli trimatch_cli_map
+BINS = trimatch_cli_set trimatch_cli_map
 
 all: $(BINS)
 
 
 CXX := g++
-CXXFLAGS := -Wall -Wextra -O3 -std=c++17 -isystem ../include -isystem ../external/sftrie/include
+CXXFLAGS := -Wall -Wextra -O3 -std=c++17 -I../include -isystem ../external/sftrie/include
 
 debug: CXXFLAGS += -DDEBUG -g
 debug: all
@@ -31,10 +31,10 @@ OBJS = $(patsubst %.cpp,%.o,$(SRCS))
 DEPS = $(patsubst %.cpp,%.d,$(SRCS))
 
 
-trimatch_cli: trimatch_cli.o
+trimatch_cli_set: trimatch_cli_set.o
 	$(CXX) -o $@ $^
 
-trimatch_cli_map: trimatch_cli_map`.o
+trimatch_cli_map: trimatch_cli_map.o
 	$(CXX) -o $@ $^
 
 
