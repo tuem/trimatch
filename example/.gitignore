@@ -1,1 +1,7 @@
-trimatch_cli
+trimatch_cli_set
+trimatch_cli_map
+
+*.txt
+*.csv
+*.tsv
+*.sft
