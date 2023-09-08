@@ -25,18 +25,21 @@ https://julesjacobs.com/2015/06/17/disqus-levenshtein-simple-and-fast.html
 #ifndef TRIMATCH_LEVENSHTEIN_NFA
 #define TRIMATCH_LEVENSHTEIN_NFA
 
+#include <cstddef>
 #include <vector>
 #include <set>
 
 namespace trimatch
 {
 
-template<typename text>
+template<
+	typename text,
+	typename integer = std::uint32_t
+>
 class LevenshteinNFA
 {
 public:
 	using symbol = typename text::value_type;
-	using integer = typename text::size_type;
 	using state = std::pair<integer, integer>; // position, edits
 
 	const text pattern;
