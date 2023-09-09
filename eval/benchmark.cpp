@@ -37,7 +37,8 @@ limitations under the License.
 #include "history.hpp"
 
 
-using text = std::u32string;
+//using text = std::u32string;
+using text = std::string;
 using symbol = typename text::value_type;
 using integer = std::uint32_t;
 
@@ -102,7 +103,7 @@ size_t exec_approx_dfa_trie(const set& trie,
 }
 
 template<typename text>
-bool benchmark(const std::string& corpus_path, const std::string& algorithm, size_t max_edits)
+bool benchmark(const std::string& dictionary_path, const std::string& algorithm, size_t max_edits, size_t max_queries)
 {
 	using symbol = typename text::value_type;
 
@@ -111,9 +112,9 @@ bool benchmark(const std::string& corpus_path, const std::string& algorithm, siz
 	std::cerr << "loading texts...";
 	history.refresh();
 	std::vector<text> texts;
-	std::ifstream ifs(corpus_path);
+	std::ifstream ifs(dictionary_path);
 	if(!ifs.is_open())
-		throw std::runtime_error("input file is not available: " + corpus_path);
+		throw std::runtime_error("input file is not available: " + dictionary_path);
 	while(ifs.good()){
 		std::string line;
 		std::getline(ifs, line);
@@ -153,7 +154,7 @@ bool benchmark(const std::string& corpus_path, const std::string& algorithm, siz
 
 	std::cerr << "sorting texts...";
 	history.refresh();
-	sftrie::sort_texts(std::begin(texts), std::end(texts));
+	sftrie::sort_texts(texts.begin(), texts.end());
 	history.record("sorting texts", texts.size());
 	std::cerr << "done." << std::endl;
 
@@ -162,7 +163,9 @@ bool benchmark(const std::string& corpus_path, const std::string& algorithm, siz
 	std::vector<text> queries = texts;
 	std::vector<text> shuffled_queries = queries;
 	auto seed = std::chrono::system_clock::now().time_since_epoch().count();
-	std::shuffle(std::begin(shuffled_queries), std::end(shuffled_queries), std::default_random_engine(seed));
+	std::shuffle(shuffled_queries.begin(), shuffled_queries.end(), std::default_random_engine(seed));
+	if(max_queries > 0)
+		shuffled_queries.erase(shuffled_queries.begin() + max_queries, shuffled_queries.end());
 	history.record("generating queries", queries.size());
 	std::cerr << "done." << std::endl;
 
@@ -170,7 +173,7 @@ bool benchmark(const std::string& corpus_path, const std::string& algorithm, siz
 	size_t found_approx = 0;
 	std::cerr << "constructing index...";
 	history.refresh();
-	sftrie::set<text, integer> index(std::begin(texts), std::end(texts));
+	sftrie::set<text, integer> index(texts.begin(), texts.end());
 	history.record("construction", texts.size());
 	std::cerr << "done." << std::endl;
 
@@ -229,15 +232,18 @@ bool benchmark(const std::string& corpus_path, const std::string& algorithm, siz
 
 int main(int argc, char* argv[])
 {
-	if(argc < 4){
-		std::cout << "usage: " << argv[0] << " corpus_path algorithm max_edits" << std::endl;
+	if(argc < 2){
+		std::cout << "usage: " << argv[0] << " dictionary_path [algorithm=dfa-trie] [max_edits=1] [max_queries=0]" << std::endl;
 		std::cout << "  algorithm: (dp|bp|dp-trie|dfa-trie)" << std::endl;
+		std::cout << "  max_edits: allowable levenshtein distance" << std::endl;
+		std::cout << "  max_queries: maximum mumber of approximate search queries (set 0 to use all entries in the dictionary)" << std::endl;
 		return 0;
 	}
 
-	std::string corpus_path = argv[1];
-	std::string algorithm= argv[2];
-	integer max_edits = std::atoi(argv[3]);
+	std::string dictionary_path = argv[1];
+	std::string algorithm = argc > 2 ? argv[2] : "dfa-trie";
+	size_t max_edits = argc > 3 ? std::atoi(argv[3]) : 1;
+	size_t max_queries = argc > 4 ? std::atoi(argv[4]) : 0;
 
-	benchmark<text>(corpus_path, algorithm, max_edits);
+	benchmark<text>(dictionary_path, algorithm, max_edits, max_queries);
 }
