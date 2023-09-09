@@ -21,13 +21,14 @@ limitations under the License.
 Main interface for exact matching, predictive search and approximate search
 */
 
-#ifndef TRIMATCH_SEARCHER
-#define TRIMATCH_SEARCHER
+#ifndef TRIMATCH_SEARCHER_SET
+#define TRIMATCH_SEARCHER_SET
 
-#include "index.hpp"
+#include "index_set.hpp"
 
-namespace trimatch
-{
+namespace trimatch{
+
+namespace set{
 
 template<class text, class integer, class trie, class approximate_matcher>
 class index<text, integer, trie, approximate_matcher>::search_client
@@ -304,6 +305,8 @@ void index<text, integer, trie, approximate_matcher>::search_client::correct_app
 		}
 		current.pop_back();
 	}
+}
+
 }
 
 }

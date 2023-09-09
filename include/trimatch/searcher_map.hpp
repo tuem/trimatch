@@ -26,11 +26,12 @@ Main interface for exact matching, predictive search and approximate search
 
 #include "index_map.hpp"
 
-namespace trimatch
-{
+namespace trimatch{
+
+namespace map{
 
 template<class text, class item, class integer, class trie, class approximate_matcher>
-class index_map<text, item, integer, trie, approximate_matcher>::search_client
+class index<text, item, integer, trie, approximate_matcher>::search_client
 {
 public:
 	//using value_type = typename trie::value_type;
@@ -83,7 +84,7 @@ private:
 
 
 template<class text, class item, class integer, class trie, class approximate_matcher>
-struct index_map<text, item, integer, trie, approximate_matcher>::search_client::approximate_search_iterator
+struct index<text, item, integer, trie, approximate_matcher>::search_client::approximate_search_iterator
 {
 	trie &T;
 
@@ -182,33 +183,33 @@ struct index_map<text, item, integer, trie, approximate_matcher>::search_client:
 
 
 template<class text, class item, class integer, class trie, class approximate_matcher>
-index_map<text, item, integer, trie, approximate_matcher>::search_client::search_client(trie& T):
+index<text, item, integer, trie, approximate_matcher>::search_client::search_client(trie& T):
 	T(T), trie_search_client(T.searcher())
 {}
 
 template<class text, class item, class integer, class trie, class approximate_matcher>
-bool index_map<text, item, integer, trie, approximate_matcher>::search_client::exact(const text& query) const
+bool index<text, item, integer, trie, approximate_matcher>::search_client::exact(const text& query) const
 {
 	return T.exists(query);
 }
 
 template<class text, class item, class integer, class trie, class approximate_matcher>
-typename index_map<text, item, integer, trie, approximate_matcher>::search_client::prefix_search_iterator
-index_map<text, item, integer, trie, approximate_matcher>::search_client::prefix(const text& query)
+typename index<text, item, integer, trie, approximate_matcher>::search_client::prefix_search_iterator
+index<text, item, integer, trie, approximate_matcher>::search_client::prefix(const text& query)
 {
 	return trie_search_client.prefix(query);
 }
 
 template<class text, class item, class integer, class trie, class approximate_matcher>
-typename index_map<text, item, integer, trie, approximate_matcher>::search_client::predictive_search_iterator
-index_map<text, item, integer, trie, approximate_matcher>::search_client::predict(const text& query)
+typename index<text, item, integer, trie, approximate_matcher>::search_client::predictive_search_iterator
+index<text, item, integer, trie, approximate_matcher>::search_client::predict(const text& query)
 {
 	return trie_search_client.predict(query);
 }
 
 template<class text, class item, class integer, class trie, class approximate_matcher>
 template<class back_insert_iterator>
-void index_map<text, item, integer, trie, approximate_matcher>::search_client::predict(
+void index<text, item, integer, trie, approximate_matcher>::search_client::predict(
 	const text& query, back_insert_iterator bi) const
 {
 	typename trie::common_searcher searcher(T);
@@ -217,15 +218,15 @@ void index_map<text, item, integer, trie, approximate_matcher>::search_client::p
 }
 
 template<class text, class item, class integer, class trie, class approximate_matcher>
-typename index_map<text, item, integer, trie, approximate_matcher>::search_client::approximate_search_iterator
-index_map<text, item, integer, trie, approximate_matcher>::search_client::approx(const text& query, integer max_edits) const
+typename index<text, item, integer, trie, approximate_matcher>::search_client::approximate_search_iterator
+index<text, item, integer, trie, approximate_matcher>::search_client::approx(const text& query, integer max_edits) const
 {
 	return approximate_search_iterator(T, query, max_edits);
 }
 
 template<class text, class item, class integer, class trie, class approximate_matcher>
 template<class back_insert_iterator>
-void index_map<text, item, integer, trie, approximate_matcher>::search_client::approx(
+void index<text, item, integer, trie, approximate_matcher>::search_client::approx(
 	const text& query, integer max_edits, back_insert_iterator bi) const
 {
 	approximate_matcher matcher(query, max_edits);
@@ -235,7 +236,7 @@ void index_map<text, item, integer, trie, approximate_matcher>::search_client::a
 
 template<class text, class item, class integer, class trie, class approximate_matcher>
 template<class back_insert_iterator>
-void index_map<text, item, integer, trie, approximate_matcher>::search_client::approx_step(
+void index<text, item, integer, trie, approximate_matcher>::search_client::approx_step(
 	approximate_matcher& matcher, typename trie::node_type root, text& current, back_insert_iterator& bi) const
 {
 	if(root.match() && matcher.matched())
@@ -254,7 +255,7 @@ void index_map<text, item, integer, trie, approximate_matcher>::search_client::a
 
 template<class text, class item, class integer, class trie, class approximate_matcher>
 template<class back_insert_iterator>
-void index_map<text, item, integer, trie, approximate_matcher>::search_client::approx_predict(
+void index<text, item, integer, trie, approximate_matcher>::search_client::approx_predict(
 	const text& query, integer max_edits, back_insert_iterator bi) const
 {
 	approximate_matcher matcher(query, max_edits);
@@ -264,7 +265,7 @@ void index_map<text, item, integer, trie, approximate_matcher>::search_client::a
 
 template<class text, class item, class integer, class trie, class approximate_matcher>
 template<class back_insert_iterator>
-void index_map<text, item, integer, trie, approximate_matcher>::search_client::approx_predict_step(
+void index<text, item, integer, trie, approximate_matcher>::search_client::approx_predict_step(
 	integer max_edits, approximate_matcher& matcher, typename trie::node_type root, text& current, back_insert_iterator& bi) const
 {
 	if(matcher.matched()){
@@ -285,7 +286,7 @@ void index_map<text, item, integer, trie, approximate_matcher>::search_client::a
 
 template<class text, class item, class integer, class trie, class approximate_matcher>
 template<class back_insert_iterator>
-void index_map<text, item, integer, trie, approximate_matcher>::search_client::correct_approx_predict_results(
+void index<text, item, integer, trie, approximate_matcher>::search_client::correct_approx_predict_results(
 	integer max_edits, approximate_matcher& matcher, typename trie::node_type root,
 	text& current, integer prefix_edits, integer current_edits, back_insert_iterator& bi) const
 {
@@ -305,6 +306,8 @@ void index_map<text, item, integer, trie, approximate_matcher>::search_client::c
 		}
 		current.pop_back();
 	}
+}
+
 }
 
 }

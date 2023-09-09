@@ -11,19 +11,16 @@
 
 3. Build index
 ```c++
-std::vector<std::string> texts; // you can also use wstring, u16string, u32string, etc.
+std::vector<std::string> texts; // you can also use u16string, u32string, etc.
 ...
-auto index = trimatch::build(texts);
+auto index = trimatch::set::build(texts);
 ```
 
-4. Search from index
+4. Search texts
 ```c++
 std::string query = "...";
 auto searcher = index.searcher();
 
-std::cout << "exact match: " << searcher.exact(query) ? "found" : "not found" << std::endl;
-for(const auto& result: searcher.predict(query))
-	std::cout << "predictive search: " << result << std::endl;
 for(const auto& result: searcher.approx(query))
 	std::cout << "approximate search: text=" << result.first << ", score=" << result.second << std::endl;
 ```

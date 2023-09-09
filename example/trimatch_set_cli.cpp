@@ -33,7 +33,7 @@ If a query ends with '*' or '?', predictive search or approximate search will be
 
 using text = std::string;
 using integer = std::uint32_t;
-using index_type = trimatch::index<text, integer>;
+using index_type = trimatch::set::index<text, integer>;
 
 
 int main(int argc, char* argv[])

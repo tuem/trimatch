@@ -28,14 +28,14 @@ If a query ends with '*' or '?', predictive search or approximate search will be
 #include <fstream>
 #include <string>
 
-#include <trimatch/index_map.hpp>
+#include <trimatch/index.hpp>
 
 #include <array>
 
 using text = std::string;
 using integer = std::uint32_t;
 using item = std::array<integer, 2>;
-using index_type = trimatch::index_map<text, item, integer>;
+using index_type = trimatch::map::index<text, item, integer>;
 
 int main(int argc, char* argv[])
 {
