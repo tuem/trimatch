@@ -1,5 +1,5 @@
-trimatch_cli_set
-trimatch_cli_map
+trimatch_set_cli
+trimatch_map_cli
 
 *.txt
 *.csv
