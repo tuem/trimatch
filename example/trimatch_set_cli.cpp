@@ -36,51 +36,11 @@ Query options:
 
 using text = std::string;
 using integer = std::uint32_t;
-using index_type = trimatch::set::index<text, integer>;
 
-
-int main(int argc, char* argv[])
+template<typename index_type>
+void exec(const index_type& index, integer max_distance)
 {
-	if(argc < 2){
-		std::cerr << "usage: " << argv[0] << " input_path [max_distance=1] [load_index=false]" << std::endl;
-		return 0;
-	}
-
-	std::string input_path = argv[1];
-	int max_distance = argc >= 3 ? std::stoi(argv[2]) : 2;
-	bool load_index = argc >= 4 && std::string(argv[3]) == "true";
-
-	std::shared_ptr<index_type> index;
-	if(load_index){
-		std::cerr << "loadinag index...";
-		index = std::make_shared<index_type>(input_path);
-		std::cerr << "done." << std::endl;
-	}
-	else{
-		std::vector<text> texts;
-		std::ifstream ifs(input_path);
-
-		std::cerr << "loading texts...";
-		if(!ifs.is_open()){
-			std::cerr << "input file is not available: " << input_path << std::endl;
-			return 1;
-		}
-		while(ifs.good()){
-			std::string line;
-			std::getline(ifs, line);
-			if(ifs.eof())
-				break;
-			texts.push_back(line);
-		}
-		sftrie::sort_texts(texts.begin(), texts.end());
-		std::cerr << "done." << std::endl;
-
-		std::cerr << "building index...";
-		index = std::make_shared<index_type>(texts.begin(), texts.end());
-		std::cerr << "done, " << texts.size() << " texts" << std::endl;
-	}
-
-	auto searcher = index->searcher();
+	auto searcher = index.searcher();
 	while(true){
 		std::cerr << "> ";
 		std::string query;
@@ -90,7 +50,7 @@ int main(int argc, char* argv[])
 		}
 		else if(query.substr(0, 5) == "save="){
 			std::string output_path = query.substr(5);
-			index->save(output_path);
+			index.save(output_path);
 			std::cout << "index saved to " << output_path << std::endl;
 			continue;
 		}
@@ -128,6 +88,52 @@ int main(int argc, char* argv[])
 		}
 		if(count == 0)
 			std::cout << query << ": " << "not found" << std::endl;
+	}
+}
+
+int main(int argc, char* argv[])
+{
+	if(argc < 2){
+		std::cerr << "usage: " << argv[0] << " input_path [load_index=false] [max_distance=1]" << std::endl;
+		return 0;
+	}
+
+	std::string input_path = argv[1];
+	bool load_index = argc > 2 && std::string(argv[2]) == "true";
+	int max_distance = argc > 3 ? std::stoi(argv[3]) : 2;
+
+	if(load_index){
+		std::cerr << "loadinag index...";
+		auto index = trimatch::set::load<text>(input_path);
+		std::cerr << "done." << std::endl;
+
+		exec(index, max_distance);
+	}
+	else{
+		std::vector<text> texts;
+
+		std::ifstream ifs(input_path);
+		if(!ifs.is_open()){
+			std::cerr << "input file is not available: " << input_path << std::endl;
+			return 1;
+		}
+
+		std::cerr << "loading texts...";
+		while(ifs.good()){
+			std::string line;
+			std::getline(ifs, line);
+			if(ifs.eof())
+				break;
+			texts.push_back(line);
+		}
+		sftrie::sort_texts(texts.begin(), texts.end());
+		std::cerr << "done, " << texts.size() << " texts"  << std::endl;
+
+		std::cerr << "building index...";
+		auto index = trimatch::set::build(texts.begin(), texts.end());
+		std::cerr << "done" << std::endl;
+
+		exec(index, max_distance);
 	}
 
 	return 0;
