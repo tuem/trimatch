@@ -19,7 +19,6 @@ limitations under the License.
 
 /*
 Syntax sugar for using set::index and map::index
-Controller for tries and searchers
 */
 
 #ifndef TRIMATCH_INDEX
@@ -27,6 +26,7 @@ Controller for tries and searchers
 
 #include <cstddef>
 #include <iterator>
+#include <fstream>
 
 #include "index_set.hpp"
 #include "index_map.hpp"
@@ -60,15 +60,26 @@ index<text, integer, trie> build(const random_accessible_container& texts)
 }
 
 template<
-	class input_stream,
+	class text,
+	class integer = std::uint32_t,
+	class trie = sftrie::set<text, integer>,
+	class approximate_matcher = LevenshteinDFA<text, integer>,
+	class input_stream = std::ifstream
+>
+index<text, integer, trie> load(input_stream& is)
+{
+	return index<text, integer, trie, approximate_matcher>(is);
+}
+
+template<
 	class text,
 	class integer = std::uint32_t,
 	class trie = sftrie::set<text, integer>,
 	class approximate_matcher = LevenshteinDFA<text, integer>
 >
-index<text, integer, trie> build(input_stream& is)
+index<text, integer, trie, approximate_matcher> load(const std::string path)
 {
-	return index<text, integer, trie, approximate_matcher>(is);
+	return index<text, integer, trie, approximate_matcher>(path);
 }
 
 template<
@@ -86,8 +97,8 @@ namespace map{
 
 template<
 	class random_access_iterator,
-	class text = typename std::iterator_traits<random_access_iterator>::value_type,
-	class item = std::int32_t,
+	class text = typename std::iterator_traits<random_access_iterator>::value_type::first_type,
+	class item = typename std::iterator_traits<random_access_iterator>::value_type::second_type,
 	class integer = std::uint32_t,
 	class trie = sftrie::map<text, item, integer>,
 	class approximate_matcher = LevenshteinDFA<text, integer>
@@ -99,8 +110,8 @@ index<text, item, integer, trie, approximate_matcher> build(random_access_iterat
 
 template<
 	class random_accessible_container,
-	class text = typename random_accessible_container::value_type,
-	class item = std::int32_t,
+	class text = typename std::iterator_traits<random_accessible_container>::value_type::first_type,
+	class item = typename std::iterator_traits<random_accessible_container>::value_type::second_type,
 	class integer = std::uint32_t,
 	class trie = sftrie::map<text, item, integer>,
 	class approximate_matcher = LevenshteinDFA<text, integer>
@@ -111,16 +122,28 @@ index<text, item, integer, trie, approximate_matcher> build(const random_accessi
 }
 
 template<
-	class input_stream,
+	class text,
+	class item,
+	class integer = std::uint32_t,
+	class trie = sftrie::map<text, item, integer>,
+	class approximate_matcher = LevenshteinDFA<text, integer>,
+	class input_stream = std::ifstream
+>
+index<text, item, integer, trie, approximate_matcher> load(input_stream& is)
+{
+	return index<text, item, integer, trie, approximate_matcher>(is);
+}
+
+template<
 	class text,
 	class item,
 	class integer = std::uint32_t,
 	class trie = sftrie::map<text, item, integer>,
 	class approximate_matcher = LevenshteinDFA<text, integer>
 >
-index<text, item, integer, trie, approximate_matcher> build(input_stream& is)
+index<text, item, integer, trie, approximate_matcher> load(const std::string path)
 {
-	return index<text, item, integer, trie, approximate_matcher>(is);
+	return index<text, item, integer, trie, approximate_matcher>(path);
 }
 
 template<
