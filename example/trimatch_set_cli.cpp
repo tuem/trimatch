@@ -19,7 +19,7 @@ limitations under the License.
 
 /*
 Text search program using trimatch.
-Usage: trimatch_set_cli input_path [max_edits=1] [load_index=false]
+Usage: trimatch_set_cli input_path [max_distance=1] [load_index=false]
 Query options:
 - ends with '*': predictive search
 - ends with '?': apprximate search
@@ -42,12 +42,12 @@ using index_type = trimatch::set::index<text, integer>;
 int main(int argc, char* argv[])
 {
 	if(argc < 2){
-		std::cerr << "usage: " << argv[0] << " input_path [max_edits=1] [load_index=false]" << std::endl;
+		std::cerr << "usage: " << argv[0] << " input_path [max_distance=1] [load_index=false]" << std::endl;
 		return 0;
 	}
 
 	std::string input_path = argv[1];
-	int max_edits = argc >= 3 ? std::stoi(argv[2]) : 2;
+	int max_distance = argc >= 3 ? std::stoi(argv[2]) : 2;
 	bool load_index = argc >= 4 && std::string(argv[3]) == "true";
 
 	std::shared_ptr<index_type> index;
@@ -111,15 +111,15 @@ int main(int argc, char* argv[])
 		}
 		else if(last == '?'){
 			// approximate search
-			for(const auto& p: searcher.approx(query, max_edits))
-				std::cout << std::setw(4) << ++count << ": text=" << p.first << ", distance=" << p.second << std::endl;
+			for(const auto& [key, distance]: searcher.approx(query, max_distance))
+				std::cout << std::setw(4) << ++count << ": text=" << key << ", distance=" << distance << std::endl;
 		}
 		else if(last == '&'){
 			// approximate predictive search
 			std::vector<std::tuple<text, integer, integer>> results;
-			searcher.approx_predict(query, max_edits, std::back_inserter(results));
-			for(const auto& t: results)
-				std::cout << std::setw(4) << ++count << ": text=" << std::get<0>(t) << ", distance(prefix)=" << std::get<1>(t) << ", distance(whole)=" << std::get<2>(t) << std::endl;
+			searcher.approx_predict(query, max_distance, std::back_inserter(results));
+			for(const auto& [key, distance_prefix, distance_whole]: results)
+				std::cout << std::setw(4) << ++count << ": text=" << key << ", distance(prefix)=" << distance_prefix << ", distance(whole)=" << distance_whole << std::endl;
 		}
 		else{
 			// exact match

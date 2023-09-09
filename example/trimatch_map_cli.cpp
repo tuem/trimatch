@@ -19,7 +19,7 @@ limitations under the License.
 
 /*
 Text search program using trimatch.
-Usage: trimatch_map_cli input_path [max_edits=1] [load_index=false]
+Usage: trimatch_map_cli input_path [max_distance=1] [load_index=false]
 Query options:
 - ends with '*': predictive search
 - ends with '?': apprximate search
@@ -42,12 +42,12 @@ using index_type = trimatch::map::index<text, item, integer>;
 int main(int argc, char* argv[])
 {
 	if(argc < 2){
-		std::cerr << "usage: " << argv[0] << " input_path [max_edits=1] [load_index=false]" << std::endl;
+		std::cerr << "usage: " << argv[0] << " input_path [max_distance=1] [load_index=false]" << std::endl;
 		return 0;
 	}
 
 	std::string input_path = argv[1];
-	int max_edits = argc >= 3 ? std::stoi(argv[2]) : 2;
+	int max_distance = argc >= 3 ? std::stoi(argv[2]) : 2;
 	bool load_index = argc >= 4 && std::string(argv[3]) == "true";
 
 	std::shared_ptr<index_type> index;
@@ -116,16 +116,16 @@ int main(int argc, char* argv[])
 			}
 		}
 		else if(last == '?'){
-		// matched text, associated value, edits
+		// matched text, associated value, distance
 			// approximate search
-			for(const auto& [key, value0, edits]: searcher.approx(query, max_edits)){
+			for(const auto& [key, value0, distance]: searcher.approx(query, max_distance)){
 				auto& value = trie[key];
 				std::cout <<
 					std::setw(4) << ++count << ": " <<
 					"text=" << key <<
 					", id=" << value[0] <<
 					" search count=" << ++value[1] <<
-					", distance=" << edits <<
+					", distance=" << distance <<
 					std::endl;
 
 			}
@@ -133,16 +133,16 @@ int main(int argc, char* argv[])
 		else if(last == '&'){
 			// approximate predictive search
 			std::vector<std::tuple<text, item, integer, integer>> results;
-			searcher.approx_predict(query, max_edits, std::back_inserter(results));
-			for(const auto& [key, value0, edits_prefix, edits_whole]: results){
+			searcher.approx_predict(query, max_distance, std::back_inserter(results));
+			for(const auto& [key, value0, distance_prefix, distance_whole]: results){
 				auto& value = trie[key];
 				std::cout <<
 					std::setw(4) << ++count << ": " <<
 					"text=" << key <<
 					", id=" << value[0] <<
 					" search count=" << ++value[1] <<
-					", distance(prefix)=" << edits_prefix <<
-					", distance(whole)=" << edits_whole <<
+					", distance(prefix)=" << distance_prefix <<
+					", distance(whole)=" << distance_whole <<
 					std::endl;
 			}
 		}

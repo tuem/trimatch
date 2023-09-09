@@ -21,6 +21,6 @@ auto index = trimatch::set::build(texts);
 std::string query = "...";
 auto searcher = index.searcher();
 
-for(const auto& result: searcher.approx(query))
-	std::cout << "approximate search: text=" << result.first << ", score=" << result.second << std::endl;
+for(const auto& [text, distance]: searcher.approx(query))
+	std::cout << "text=" << text << ", distance=" << distance << std::endl;
 ```
