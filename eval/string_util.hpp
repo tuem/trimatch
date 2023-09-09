@@ -17,12 +17,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef TRIMATCH_EVAL_STRING_UTIL_HPP
-#define TRIMATCH_EVAL_STRING_UTIL_HPP
+#ifndef TRIMATCH_EVAL_STRING_UTIL
+#define TRIMATCH_EVAL_STRING_UTIL
 
 #include <string>
-#include <locale>
-#include <codecvt>
 
 template<typename src_type, typename dest_type>
 void cast_string(const src_type& src, dest_type& dest);

@@ -29,16 +29,15 @@ limitations under the License.
 
 #include <trimatch/index.hpp>
 
-#include "competitors/edit_distance_dp.hpp"
-#include "competitors/online_edit_distance_dp.hpp"
-#include "competitors/edit_distance_bp.hpp"
+#include "matcher/edit_distance_dp.hpp"
+#include "matcher/edit_distance_bp.hpp"
+#include "matcher/online_edit_distance_dp.hpp"
 
 #include "string_util.hpp"
 #include "history.hpp"
 
 
-//using text = std::u32string;
-using text = std::string;
+using text = std::u32string;
 using symbol = typename text::value_type;
 using integer = std::uint32_t;
 

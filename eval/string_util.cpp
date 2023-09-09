@@ -19,6 +19,7 @@ limitations under the License.
 
 #include "string_util.hpp"
 
+#include <locale>
 #include <codecvt>
 
 #pragma GCC diagnostic push
