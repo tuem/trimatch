@@ -44,7 +44,7 @@ TEST_CASE("searcher / small dictionary / exact matching", "[index][exact]"){
 	};
 	sftrie::sort_texts(texts.begin(), texts.end());
 
-	auto index = trimatch::build(texts.begin(), texts.end());
+	auto index = trimatch::set::build(texts.begin(), texts.end());
 	auto searcher = index.searcher();
 
 	SECTION("exact matching (will be succeeded)"){
@@ -77,7 +77,7 @@ TEST_CASE("searcher / small dictionary / prefix search", "[index][prefix]"){
 	};
 	sftrie::sort_texts(texts.begin(), texts.end());
 
-	auto index = trimatch::build(texts.begin(), texts.end());
+	auto index = trimatch::set::build(texts.begin(), texts.end());
 	auto searcher = index.searcher();
 
 	SECTION("prefix search (empty query)"){
@@ -123,7 +123,7 @@ TEST_CASE("searcher / small dictionary / predictive search", "[index][predict]")
 	};
 	sftrie::sort_texts(texts.begin(), texts.end());
 
-	auto index = trimatch::build(texts.begin(), texts.end());
+	auto index = trimatch::set::build(texts.begin(), texts.end());
 	auto searcher = index.searcher();
 
 	SECTION("predictive search (empty query)"){
@@ -179,7 +179,7 @@ TEST_CASE("searcher / small dictionary / approximate search", "[index][approx]")
 	};
 	sftrie::sort_texts(texts.begin(), texts.end());
 
-	auto index = trimatch::build(texts.begin(), texts.end());
+	auto index = trimatch::set::build(texts.begin(), texts.end());
 	auto searcher = index.searcher();
 
 	SECTION("approximate match (empty query)"){

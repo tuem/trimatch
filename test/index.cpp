@@ -27,7 +27,7 @@ TEST_CASE("index / exact matching / dictionary consists of an empty string", "[i
 		""
 	};
 
-	auto index = trimatch::build(texts.begin(), texts.end());
+	auto index = trimatch::set::build(texts.begin(), texts.end());
 	auto searcher = index.searcher();
 
 	SECTION("exact matching (will be succeeded)"){
@@ -46,7 +46,7 @@ TEST_CASE("index / exact matching / tiny dictionary", "[index][exact]"){
 		"F",
 	};
 
-	auto index = trimatch::build(texts.begin(), texts.end());
+	auto index = trimatch::set::build(texts.begin(), texts.end());
 	auto searcher = index.searcher();
 
 	SECTION("exact matching (will be succeeded)"){
@@ -76,7 +76,7 @@ TEST_CASE("index / exact matching / small dictionary", "[index][exact]"){
 		"DM",
 	};
 
-	auto index = trimatch::build(texts.begin(), texts.end());
+	auto index = trimatch::set::build(texts.begin(), texts.end());
 	auto searcher = index.searcher();
 
 	SECTION("exact matching (will be succeeded)"){
