@@ -27,8 +27,11 @@ limitations under the License.
 #include <trimatch/index.hpp>
 
 
+using text = std::string;
+
+
 TEST_CASE("searcher / small dictionary / exact matching", "[index][exact]"){
-	std::vector<std::string> texts = {
+	std::vector<text> texts = {
 		"A",
 		"AM",
 		"AMD",
@@ -61,7 +64,7 @@ TEST_CASE("searcher / small dictionary / exact matching", "[index][exact]"){
 }
 
 TEST_CASE("searcher / small dictionary / prefix search", "[index][prefix]"){
-	std::vector<std::string> texts = {
+	std::vector<text> texts = {
 		"A",
 		"AM",
 		"AMD",
@@ -81,15 +84,15 @@ TEST_CASE("searcher / small dictionary / prefix search", "[index][prefix]"){
 	auto searcher = index.searcher();
 
 	SECTION("prefix search (empty query)"){
-		std::string query = "";
-		std::set<std::string> results;
+		text query = "";
+		std::set<text> results;
 		for(const auto& result: searcher.prefix(query))
 			results.insert(result);
 		CHECK(results.size() == 0);
 	}
 	SECTION("prefix search"){
-		std::string query = "AMPLIFY";
-		std::set<std::string> results;
+		text query = "AMPLIFY";
+		std::set<text> results;
 		for(const auto& result: searcher.prefix(query))
 			results.insert(result);
 		CHECK(results.size() == 3);
@@ -98,8 +101,8 @@ TEST_CASE("searcher / small dictionary / prefix search", "[index][prefix]"){
 		CHECK(results.count("AMP") > 0);
 	}
 	SECTION("prefix search (will be failed)"){
-		std::string query = "BMP";
-		std::set<std::string> results;
+		text query = "BMP";
+		std::set<text> results;
 		for(const auto& result: searcher.prefix(query))
 			results.insert(result);
 		CHECK(results.size() == 0);
@@ -107,7 +110,7 @@ TEST_CASE("searcher / small dictionary / prefix search", "[index][prefix]"){
 }
 
 TEST_CASE("searcher / small dictionary / predictive search", "[index][predict]"){
-	std::vector<std::string> texts = {
+	std::vector<text> texts = {
 		"A",
 		"AM",
 		"AMD",
@@ -127,43 +130,43 @@ TEST_CASE("searcher / small dictionary / predictive search", "[index][predict]")
 	auto searcher = index.searcher();
 
 	SECTION("predictive search (empty query)"){
-		std::string query = "";
-		std::vector<std::string> results;
+		text query = "";
+		std::vector<text> results;
 		searcher.predict(query, std::back_inserter(results));
 		CHECK(results.size() == texts.size());
-		std::set<std::string> results_set(results.begin(), results.end());
+		std::set<text> results_set(results.begin(), results.end());
 		for(const auto& t: texts)
 			CHECK(results_set.count(t) > 0);
 	}
 	SECTION("predictive search"){
-		std::string query = "A";
-		std::vector<std::string> results;
+		text query = "A";
+		std::vector<text> results;
 		searcher.predict(query, std::back_inserter(results));
 		CHECK(results.size() == 4);
-		std::set<std::string> results_set(results.begin(), results.end());
+		std::set<text> results_set(results.begin(), results.end());
 		CHECK(results_set.count("A") > 0);
 		CHECK(results_set.count("AM") > 0);
 		CHECK(results_set.count("AMD") > 0);
 		CHECK(results_set.count("AMP") > 0);
 	}
 	SECTION("predictive search"){
-		std::string query = "D";
-		std::vector<std::string> results;
+		text query = "D";
+		std::vector<text> results;
 		searcher.predict(query, std::back_inserter(results));
 		CHECK(results.size() == 1);
-		std::set<std::string> results_set(results.begin(), results.end());
+		std::set<text> results_set(results.begin(), results.end());
 		CHECK(results_set.count("DM") > 0);
 	}
 	SECTION("predictive search (will be failed)"){
-		std::string query = "CAS";
-		std::vector<std::string> results;
+		text query = "CAS";
+		std::vector<text> results;
 		searcher.predict(query, std::back_inserter(results));
 		CHECK(results.size() == 0);
 	}
 }
 
 TEST_CASE("searcher / small dictionary / approximate search", "[index][approx]"){
-	std::vector<std::string> texts = {
+	std::vector<text> texts = {
 		"A",
 		"AM",
 		"AMD",
@@ -183,8 +186,8 @@ TEST_CASE("searcher / small dictionary / approximate search", "[index][approx]")
 	auto searcher = index.searcher();
 
 	SECTION("approximate match (empty query)"){
-		std::string query = "";
-		std::vector<std::pair<std::string, unsigned long>> results;
+		text query = "";
+		std::vector<std::pair<text, unsigned long>> results;
 
 		searcher.approx(query, 0, std::back_inserter(results));
 		CHECK(results.size() == 0);
@@ -198,25 +201,25 @@ TEST_CASE("searcher / small dictionary / approximate search", "[index][approx]")
 		CHECK(results.size() == 6);
 	}
 	SECTION("approximate match"){
-		std::string query = "AD";
-		std::vector<std::pair<std::string, unsigned long>> results;
+		text query = "AD";
+		std::vector<std::pair<text, unsigned long>> results;
 
 		searcher.approx(query, 1, std::back_inserter(results));
 		CHECK(results.size() == 5);
-		CHECK(std::get<0>(results[0]) == std::string("A"));
+		CHECK(std::get<0>(results[0]) == text("A"));
 		CHECK(std::get<1>(results[0]) == 1);
-		CHECK(std::get<0>(results[1]) == std::string("AM"));
+		CHECK(std::get<0>(results[1]) == text("AM"));
 		CHECK(std::get<1>(results[1]) == 1);
-		CHECK(std::get<0>(results[2]) == std::string("AMD"));
+		CHECK(std::get<0>(results[2]) == text("AMD"));
 		CHECK(std::get<1>(results[2]) == 1);
-		CHECK(std::get<0>(results[3]) == std::string("CAD"));
+		CHECK(std::get<0>(results[3]) == text("CAD"));
 		CHECK(std::get<1>(results[3]) == 1);
-		CHECK(std::get<0>(results[4]) == std::string("MD"));
+		CHECK(std::get<0>(results[4]) == text("MD"));
 		CHECK(std::get<1>(results[4]) == 1);
 	}
 	SECTION("approximate match (different minimum edits)"){
-		std::string query = "CORP";
-		std::vector<std::pair<std::string, unsigned long>> results;
+		text query = "CORP";
+		std::vector<std::pair<text, unsigned long>> results;
 
 		searcher.approx(query, 1, std::back_inserter(results));
 		CHECK(results.size() == 0);

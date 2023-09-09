@@ -17,21 +17,26 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+#include <string>
+
 #include <Catch2/catch.hpp>
 
 #include <trimatch/levenshtein_dfa.hpp>
 
-using symbol = char;
+
+using text = std::string;
+using symbol = typename text::value_type;
 using integer = std::uint32_t;
 
-TEST_CASE("levenshtein_dfa / small pattern", "[DFA][approx]"){
-	std::string pattern = "CORP";
 
-	std::vector<std::string> texts0 = {
+TEST_CASE("levenshtein_dfa / small pattern", "[DFA][approx]"){
+	text pattern = "CORP";
+
+	std::vector<text> texts0 = {
 		"CORP",
 	};
 
-	std::vector<std::string> texts1 = {
+	std::vector<text> texts1 = {
 		"ORP",
 		"COP",
 		"COR",
@@ -43,7 +48,7 @@ TEST_CASE("levenshtein_dfa / small pattern", "[DFA][approx]"){
 		"CORE",
 	};
 
-	std::vector<std::string> texts2 = {
+	std::vector<text> texts2 = {
 		"RP",
 		"CO",
 		"CR",

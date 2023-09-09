@@ -17,13 +17,34 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+#include <string>
+
 #include <Catch2/catch.hpp>
 
 #include <trimatch/index.hpp>
 
 
+using text = std::string;
+
+
+TEST_CASE("index / exact matching / empty dictionary", "[index][exact]"){
+	std::vector<text> texts = {
+	};
+
+	auto index = trimatch::set::build(texts.begin(), texts.end());
+	auto searcher = index.searcher();
+
+	SECTION("exact matching (will be succeeded)"){
+	}
+	SECTION("exact matching (will be failed)"){
+		CHECK_FALSE(searcher.exact(""));
+		CHECK_FALSE(searcher.exact("A"));
+		CHECK_FALSE(searcher.exact("BC"));
+	}
+}
+
 TEST_CASE("index / exact matching / dictionary consists of an empty string", "[index][exact]"){
-	std::vector<std::string> texts = {
+	std::vector<text> texts = {
 		""
 	};
 
@@ -40,7 +61,7 @@ TEST_CASE("index / exact matching / dictionary consists of an empty string", "[i
 }
 
 TEST_CASE("index / exact matching / tiny dictionary", "[index][exact]"){
-	std::vector<std::string> texts = {
+	std::vector<text> texts = {
 		"B",
 		"D",
 		"F",
@@ -67,7 +88,7 @@ TEST_CASE("index / exact matching / tiny dictionary", "[index][exact]"){
 }
 
 TEST_CASE("index / exact matching / small dictionary", "[index][exact]"){
-	std::vector<std::string> texts = {
+	std::vector<text> texts = {
 		"AM",
 		"AMD",
 		"CAD",
