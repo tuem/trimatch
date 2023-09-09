@@ -104,8 +104,6 @@ size_t exec_approx_dfa_trie(const set& trie,
 template<typename text>
 bool benchmark(const std::string& dictionary_path, const std::string& algorithm, size_t max_edits, size_t max_queries)
 {
-	using symbol = typename text::value_type;
-
 	History history;
 
 	std::cerr << "loading texts...";

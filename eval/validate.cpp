@@ -29,9 +29,9 @@ limitations under the License.
 
 #include <trimatch/index.hpp>
 
-#include "competitors/edit_distance_dp.hpp"
-#include "competitors/online_edit_distance_dp.hpp"
-#include "competitors/edit_distance_bp.hpp"
+#include "matcher/edit_distance_dp.hpp"
+#include "matcher/edit_distance_bp.hpp"
+#include "matcher/online_edit_distance_dp.hpp"
 
 #include "string_util.hpp"
 #include "history.hpp"
@@ -119,10 +119,8 @@ size_t exec_approx_dfa_trie(const set& trie,
 }
 
 template<typename text>
-bool benchmark(const std::string& corpus_path, const std::string& algorithm, size_t max_edits)
+bool validate(const std::string& corpus_path, const std::string& algorithm, size_t max_edits)
 {
-	using symbol = typename text::value_type;
-
 	History history;
 
 	std::cerr << "loading texts...";
@@ -256,5 +254,5 @@ int main(int argc, char* argv[])
 	std::string algorithm= argv[2];
 	integer max_edits = std::atoi(argv[3]);
 
-	benchmark<text>(corpus_path, algorithm, max_edits);
+	validate<text>(corpus_path, algorithm, max_edits);
 }
