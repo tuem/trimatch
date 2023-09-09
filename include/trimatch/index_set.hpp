@@ -53,11 +53,13 @@ public:
 	index(input_stream& is);
 	index(std::string path);
 
-	search_client searcher() const;
-
 	template<typename output_stream>
 	void save(output_stream& os) const;
 	void save(std::string path) const;
+
+	search_client searcher() const;
+
+	trie& raw_trie();
 
 private:
 	const trie T;
@@ -108,6 +110,12 @@ typename index<text, integer, trie, approximate_matcher>::search_client
 index<text, integer, trie, approximate_matcher>::searcher() const
 {
 	return search_client(T);
+}
+
+template<class text, class integer, class trie, class approximate_matcher>
+trie& index<text, integer, trie, approximate_matcher>::raw_trie()
+{
+	return T;
 }
 
 }
