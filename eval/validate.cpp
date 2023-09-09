@@ -119,16 +119,16 @@ size_t exec_approx_dfa_trie(const set& trie,
 }
 
 template<typename text>
-bool validate(const std::string& corpus_path, const std::string& algorithm, size_t max_edits)
+bool validate(const std::string& dictionary_path, const std::string& algorithm, size_t max_edits)
 {
 	History history;
 
 	std::cerr << "loading texts...";
 	history.refresh();
 	std::vector<text> texts;
-	std::ifstream ifs(corpus_path);
+	std::ifstream ifs(dictionary_path);
 	if(!ifs.is_open())
-		throw std::runtime_error("input file is not available: " + corpus_path);
+		throw std::runtime_error("input file is not available: " + dictionary_path);
 	while(ifs.good()){
 		std::string line;
 		std::getline(ifs, line);
@@ -244,15 +244,16 @@ bool validate(const std::string& corpus_path, const std::string& algorithm, size
 
 int main(int argc, char* argv[])
 {
-	if(argc < 4){
-		std::cout << "usage: " << argv[0] << " corpus_path algorithm max_edits" << std::endl;
+	if(argc < 2){
+		std::cout << "usage: " << argv[0] << " dictionary_path [algorithm=dfa-trie] [max_edits=1]" << std::endl;
 		std::cout << "  algorithm: (dp|bp|dp-trie|dfa-trie)" << std::endl;
+		std::cout << "  max_edits: allowable levenshtein distance" << std::endl;
 		return 0;
 	}
 
-	std::string corpus_path = argv[1];
-	std::string algorithm= argv[2];
-	integer max_edits = std::atoi(argv[3]);
+	std::string dictionary_path = argv[1];
+	std::string algorithm = argc > 2 ? argv[2] : "dfa-trie";
+	size_t max_edits = argc > 3 ? std::atoi(argv[3]) : 1;
 
-	validate<text>(corpus_path, algorithm, max_edits);
+	validate<text>(dictionary_path, algorithm, max_edits);
 }
