@@ -33,7 +33,6 @@ limitations under the License.
 #include "matcher/edit_distance_bp.hpp"
 #include "matcher/online_edit_distance_dp.hpp"
 
-#include "string_util.hpp"
 #include "history.hpp"
 
 
@@ -117,7 +116,7 @@ bool benchmark(const std::string& dictionary_path, const std::string& algorithm,
 		std::getline(ifs, line);
 		if(ifs.eof())
 			break;
-		auto t = cast_string<text>(line);
+		auto t = sftrie::cast_text<text>(line);
 		texts.push_back(t);
 	}
 	history.record("loading texts", texts.size());

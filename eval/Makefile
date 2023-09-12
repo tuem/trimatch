@@ -31,13 +31,13 @@ OBJS = $(patsubst %.cpp,%.o,$(SRCS))
 DEPS = $(patsubst %.cpp,%.d,$(SRCS))
 
 
-benchmark: benchmark.o string_util.o history.o
+benchmark: benchmark.o history.o
 	$(CXX) -o $@ $^
 
-validate: validate.o string_util.o history.o
+validate: validate.o history.o
 	$(CXX) -o $@ $^
 
-save_load: save_load.o string_util.o history.o
+save_load: save_load.o history.o
 	$(CXX) -o $@ $^
 
 

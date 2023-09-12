@@ -33,7 +33,6 @@ limitations under the License.
 #include "matcher/edit_distance_bp.hpp"
 #include "matcher/online_edit_distance_dp.hpp"
 
-#include "string_util.hpp"
 #include "history.hpp"
 
 
@@ -45,7 +44,7 @@ using integer = std::uint32_t;
 template<typename text, typename integer>
 void output_result(const text& a, const text& b, integer d, std::ostream& os = std::cout)
 {
-	os << cast_string<std::string>(a < b ? a : b) << '\t' << cast_string<std::string>(a < b ? b : a) << '\t' << d << std::endl;
+	os << sftrie::cast_text<std::string>(a < b ? a : b) << '\t' << sftrie::cast_text<std::string>(a < b ? b : a) << '\t' << d << std::endl;
 }
 
 template<typename text, typename integer>
@@ -134,7 +133,7 @@ bool validate(const std::string& dictionary_path, const std::string& algorithm, 
 		std::getline(ifs, line);
 		if(ifs.eof())
 			break;
-		auto t = cast_string<text>(line);
+		auto t = sftrie::cast_text<text>(line);
 		texts.push_back(t);
 	}
 	history.record("loading texts", texts.size());
