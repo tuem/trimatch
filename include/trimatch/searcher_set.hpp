@@ -21,13 +21,14 @@ limitations under the License.
 Main interface for exact matching, predictive search and approximate search
 */
 
-#ifndef TRIMATCH_SEARCHER
-#define TRIMATCH_SEARCHER
+#ifndef TRIMATCH_SEARCHER_SET
+#define TRIMATCH_SEARCHER_SET
 
-#include "index.hpp"
+#include "index_set.hpp"
 
-namespace trimatch
-{
+namespace trimatch{
+
+namespace set{
 
 template<class text, class integer, class trie, class approximate_matcher>
 class index<text, integer, trie, approximate_matcher>::search_client
@@ -200,7 +201,7 @@ template<class text, class integer, class trie, class approximate_matcher>
 typename index<text, integer, trie, approximate_matcher>::search_client::predictive_search_iterator
 index<text, integer, trie, approximate_matcher>::search_client::predict(const text& query)
 {
-	return trie_search_client.traverse(query);
+	return trie_search_client.predict(query);
 }
 
 template<class text, class integer, class trie, class approximate_matcher>
@@ -209,7 +210,7 @@ void index<text, integer, trie, approximate_matcher>::search_client::predict(
 	const text& query, back_insert_iterator bi) const
 {
 	typename trie::common_searcher searcher(T);
-	for(const auto& r: searcher.traverse(query))
+	for(const auto& r: searcher.predict(query))
 		*bi++ = r;
 }
 
@@ -304,6 +305,8 @@ void index<text, integer, trie, approximate_matcher>::search_client::correct_app
 		}
 		current.pop_back();
 	}
+}
+
 }
 
 }

@@ -29,17 +29,16 @@ limitations under the License.
 
 #include <trimatch/index.hpp>
 
-#include "competitors/edit_distance_dp.hpp"
-#include "competitors/online_edit_distance_dp.hpp"
-#include "competitors/edit_distance_bp.hpp"
+#include "matcher/edit_distance_dp.hpp"
+#include "matcher/edit_distance_bp.hpp"
+#include "matcher/online_edit_distance_dp.hpp"
 
-#include "string_util.hpp"
 #include "history.hpp"
 
 
 using text = std::u32string;
 using symbol = typename text::value_type;
-using integer = typename text::size_type;
+using integer = std::uint32_t;
 
 
 template<typename text, typename integer>
@@ -70,12 +69,12 @@ size_t exec_approx_bp(const std::vector<text>& texts,
 	return found;
 }
 
-template<typename text, typename integer>
-size_t exec_approx_dp_trie(const sftrie::set<text, integer>& trie,
-	const std::vector<text>& queries, integer max_edits = 1)
+template<typename set>
+size_t exec_approx_dp_trie(const set& trie,
+	const std::vector<typename set::text_type>& queries, typename set::integer_type max_edits = 1)
 {
 	// since trie is already built, directly create searcher without trimatch::index
-	trimatch::searcher<text, integer, sftrie::set<text, integer>, OnlineEditDistance<text, integer>> searcher(trie);
+	trimatch::set::searcher<text, integer, sftrie::set<text, integer>, OnlineEditDistance<text, integer>> searcher(trie);
 	std::vector<std::pair<text, integer>> results;
 	size_t found = 0;
 	for(const auto& query: queries){
@@ -86,11 +85,11 @@ size_t exec_approx_dp_trie(const sftrie::set<text, integer>& trie,
 	return found;
 }
 
-template<typename text, typename integer>
-size_t exec_approx_dfa_trie(const sftrie::set<text, integer>& trie,
-	const std::vector<text>& queries, integer max_edits = 1)
+template<typename set>
+size_t exec_approx_dfa_trie(const set& trie,
+	const std::vector<typename set::text_type>& queries, typename set::integer_type max_edits = 1)
 {
-	trimatch::searcher<text, integer> searcher(trie);
+	trimatch::set::searcher<text, integer> searcher(trie);
 	std::vector<std::pair<text, integer>> results;
 	size_t found = 0;
 	for(const auto& query: queries){
@@ -102,24 +101,22 @@ size_t exec_approx_dfa_trie(const sftrie::set<text, integer>& trie,
 }
 
 template<typename text>
-bool benchmark(const std::string& corpus_path, const std::string& algorithm, size_t max_edits)
+bool benchmark(const std::string& dictionary_path, const std::string& algorithm, size_t max_edits, size_t max_queries)
 {
-	using symbol = typename text::value_type;
-
 	History history;
 
 	std::cerr << "loading texts...";
 	history.refresh();
 	std::vector<text> texts;
-	std::ifstream ifs(corpus_path);
+	std::ifstream ifs(dictionary_path);
 	if(!ifs.is_open())
-		throw std::runtime_error("input file is not available: " + corpus_path);
+		throw std::runtime_error("input file is not available: " + dictionary_path);
 	while(ifs.good()){
 		std::string line;
 		std::getline(ifs, line);
 		if(ifs.eof())
 			break;
-		auto t = cast_string<text>(line);
+		auto t = sftrie::cast_text<text>(line);
 		texts.push_back(t);
 	}
 	history.record("loading texts", texts.size());
@@ -153,7 +150,7 @@ bool benchmark(const std::string& corpus_path, const std::string& algorithm, siz
 
 	std::cerr << "sorting texts...";
 	history.refresh();
-	sftrie::sort_texts(std::begin(texts), std::end(texts));
+	sftrie::sort_texts(texts.begin(), texts.end());
 	history.record("sorting texts", texts.size());
 	std::cerr << "done." << std::endl;
 
@@ -162,21 +159,23 @@ bool benchmark(const std::string& corpus_path, const std::string& algorithm, siz
 	std::vector<text> queries = texts;
 	std::vector<text> shuffled_queries = queries;
 	auto seed = std::chrono::system_clock::now().time_since_epoch().count();
-	std::shuffle(std::begin(shuffled_queries), std::end(shuffled_queries), std::default_random_engine(seed));
+	std::shuffle(shuffled_queries.begin(), shuffled_queries.end(), std::default_random_engine(seed));
+	if(max_queries > 0)
+		shuffled_queries.erase(shuffled_queries.begin() + max_queries, shuffled_queries.end());
 	history.record("generating queries", queries.size());
 	std::cerr << "done." << std::endl;
 
-	size_t node_size = 0, trie_size =0, space = 0;
+	size_t node_size = 0, trie_size =0, total_space = 0;
 	size_t found_approx = 0;
 	std::cerr << "constructing index...";
 	history.refresh();
-	sftrie::set<text, integer> index(std::begin(texts), std::end(texts));
+	sftrie::set<text, integer> index(texts.begin(), texts.end());
 	history.record("construction", texts.size());
 	std::cerr << "done." << std::endl;
 
 	node_size = index.node_size();
 	trie_size = index.trie_size();
-	space = index.space();
+	total_space = index.total_space();
 
 	std::cerr << "approximate search...";
 	history.refresh();
@@ -219,7 +218,7 @@ bool benchmark(const std::string& corpus_path, const std::string& algorithm, siz
 	std::cout << std::left << std::setw(30) << "total bytes" << std::right << std::setw(12) << (sizeof(symbol) * total_length) << std::endl;
 	std::cout << std::left << std::setw(30) << "node size" << std::right << std::setw(12) << node_size << std::endl;
 	std::cout << std::left << std::setw(30) << "trie size" << std::right << std::setw(12) << trie_size << std::endl;
-	std::cout << std::left << std::setw(30) << "index size" << std::right << std::setw(12) << space << std::endl;
+	std::cout << std::left << std::setw(30) << "index size" << std::right << std::setw(12) << total_space << std::endl;
 	std::cout << std::endl;
 	std::cout << "[time]" << std::endl;
 	history.dump();
@@ -229,15 +228,18 @@ bool benchmark(const std::string& corpus_path, const std::string& algorithm, siz
 
 int main(int argc, char* argv[])
 {
-	if(argc < 4){
-		std::cout << "usage: " << argv[0] << " corpus_path algorithm max_edits" << std::endl;
+	if(argc < 2){
+		std::cout << "usage: " << argv[0] << " dictionary_path [algorithm=dfa-trie] [max_edits=1] [max_queries=0]" << std::endl;
 		std::cout << "  algorithm: (dp|bp|dp-trie|dfa-trie)" << std::endl;
+		std::cout << "  max_edits: allowable levenshtein distance" << std::endl;
+		std::cout << "  max_queries: maximum mumber of approximate search queries (set 0 to use all entries in the dictionary)" << std::endl;
 		return 0;
 	}
 
-	std::string corpus_path = argv[1];
-	std::string algorithm= argv[2];
-	integer max_edits = std::atoi(argv[3]);
+	std::string dictionary_path = argv[1];
+	std::string algorithm = argc > 2 ? argv[2] : "dfa-trie";
+	size_t max_edits = argc > 3 ? std::atoi(argv[3]) : 1;
+	size_t max_queries = argc > 4 ? std::atoi(argv[4]) : 0;
 
-	benchmark<text>(corpus_path, algorithm, max_edits);
+	benchmark<text>(dictionary_path, algorithm, max_edits, max_queries);
 }

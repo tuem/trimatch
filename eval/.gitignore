@@ -3,5 +3,6 @@ validate
 save_load
 
 *.txt
+*.csv
 *.tsv
 *.sft

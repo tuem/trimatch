@@ -25,6 +25,7 @@ https://julesjacobs.com/2015/06/17/disqus-levenshtein-simple-and-fast.html
 #ifndef TRIMATCH_LEVENSHTEIN_DFA
 #define TRIMATCH_LEVENSHTEIN_DFA
 
+#include <cstddef>
 #include <vector>
 #include <set>
 #include <map>
@@ -34,7 +35,10 @@ https://julesjacobs.com/2015/06/17/disqus-levenshtein-simple-and-fast.html
 namespace trimatch
 {
 
-template<typename text, typename integer = typename text::size_type>
+template<
+	typename text,
+	typename integer = std::uint32_t
+>
 class LevenshteinDFA
 {
 public:

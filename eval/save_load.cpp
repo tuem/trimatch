@@ -28,11 +28,9 @@ limitations under the License.
 
 #include <trimatch/index.hpp>
 
-#include "string_util.hpp"
 #include "history.hpp"
 
 
-//using text = std::u16string;
 using text = std::u32string;
 using symbol = typename text::value_type;
 using integer = std::uint32_t;
@@ -56,7 +54,7 @@ bool benchmark(const std::string& corpus_path, const std::string& index_path)
 		std::getline(ifs, line);
 		if(ifs.eof())
 			break;
-		auto t = cast_string<text>(line);
+		auto t = sftrie::cast_text<text>(line);
 		texts.push_back(t);
 	}
 	history.record("loading texts", texts.size());
@@ -94,7 +92,7 @@ bool benchmark(const std::string& corpus_path, const std::string& index_path)
 	history.record("sorting texts", texts.size());
 	std::cerr << "done." << std::endl;
 
-	size_t node_size = 0, trie_size =0, space = 0;
+	size_t node_size = 0, trie_size =0, total_space = 0;
 
 	std::cerr << "constructing index...";
 	history.refresh();
@@ -104,7 +102,7 @@ bool benchmark(const std::string& corpus_path, const std::string& index_path)
 
 	node_size = index.node_size();
 	trie_size = index.trie_size();
-	space = index.space();
+	total_space = index.total_space();
 
 	std::cerr << "saving index to file...";
 	history.refresh();
@@ -138,7 +136,7 @@ bool benchmark(const std::string& corpus_path, const std::string& index_path)
 	std::cout << std::left << std::setw(30) << "total bytes" << std::right << std::setw(12) << (sizeof(symbol) * total_length) << std::endl;
 	std::cout << std::left << std::setw(30) << "node size" << std::right << std::setw(12) << node_size << std::endl;
 	std::cout << std::left << std::setw(30) << "trie size" << std::right << std::setw(12) << trie_size << std::endl;
-	std::cout << std::left << std::setw(30) << "index size" << std::right << std::setw(12) << space << std::endl;
+	std::cout << std::left << std::setw(30) << "index size" << std::right << std::setw(12) << total_space << std::endl;
 	std::cout << std::endl;
 	std::cout << "[time]" << std::endl;
 	history.dump();

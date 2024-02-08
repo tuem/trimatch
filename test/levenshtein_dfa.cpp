@@ -17,21 +17,26 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+#include <string>
+
 #include <Catch2/catch.hpp>
 
 #include <trimatch/levenshtein_dfa.hpp>
 
-using symbol = char;
+
+using text = std::string;
+using symbol = typename text::value_type;
 using integer = std::uint32_t;
 
-TEST_CASE("levenshtein_dfa / small pattern", "[DFA][approx]"){
-	std::string pattern = "CORP";
 
-	std::vector<std::string> texts0 = {
+TEST_CASE("levenshtein_dfa / small pattern", "[DFA][approx]"){
+	text pattern = "CORP";
+
+	std::vector<text> texts0 = {
 		"CORP",
 	};
 
-	std::vector<std::string> texts1 = {
+	std::vector<text> texts1 = {
 		"ORP",
 		"COP",
 		"COR",
@@ -43,7 +48,7 @@ TEST_CASE("levenshtein_dfa / small pattern", "[DFA][approx]"){
 		"CORE",
 	};
 
-	std::vector<std::string> texts2 = {
+	std::vector<text> texts2 = {
 		"RP",
 		"CO",
 		"CR",
@@ -56,8 +61,9 @@ TEST_CASE("levenshtein_dfa / small pattern", "[DFA][approx]"){
 	};
 
 	SECTION("edits = 0 / max edits = 0"){
+		integer max_edits = 0;
 		for(const auto& text: texts0){
-			auto dfa = trimatch::LevenshteinDFA(pattern, 0);
+			auto dfa = trimatch::LevenshteinDFA(pattern, max_edits);
 			bool passed = true;
 			for(const auto s: text){
 				if(!dfa.update(s)){
@@ -71,8 +77,9 @@ TEST_CASE("levenshtein_dfa / small pattern", "[DFA][approx]"){
 	}
 
 	SECTION("edits = 1 / max edits = 0"){
+		integer max_edits = 0;
 		for(const auto& text: texts1){
-			auto dfa = trimatch::LevenshteinDFA(pattern, 0);
+			auto dfa = trimatch::LevenshteinDFA(pattern, max_edits);
 			bool passed = true;
 			for(const auto s: text){
 				if(!dfa.update(s)){
@@ -86,8 +93,9 @@ TEST_CASE("levenshtein_dfa / small pattern", "[DFA][approx]"){
 	}
 
 	SECTION("edits = 2 / max edits = 0"){
+		integer max_edits = 0;
 		for(const auto& text: texts2){
-			auto dfa = trimatch::LevenshteinDFA(pattern, 0);
+			auto dfa = trimatch::LevenshteinDFA(pattern, max_edits);
 			bool passed = true;
 			for(const auto s: text){
 				if(!dfa.update(s)){
@@ -101,8 +109,9 @@ TEST_CASE("levenshtein_dfa / small pattern", "[DFA][approx]"){
 	}
 
 	SECTION("edits = 0 / max edits = 1"){
+		integer max_edits = 1;
 		for(const auto& text: texts0){
-			auto dfa = trimatch::LevenshteinDFA(pattern, 1);
+			auto dfa = trimatch::LevenshteinDFA(pattern, max_edits);
 			bool passed = true;
 			for(const auto s: text){
 				if(!dfa.update(s)){
@@ -116,8 +125,9 @@ TEST_CASE("levenshtein_dfa / small pattern", "[DFA][approx]"){
 	}
 
 	SECTION("edits = 1 / max edits = 1"){
+		integer max_edits = 1;
 		for(const auto& text: texts1){
-			auto dfa = trimatch::LevenshteinDFA(pattern, 1);
+			auto dfa = trimatch::LevenshteinDFA(pattern, max_edits);
 			bool passed = true;
 			for(const auto s: text){
 				if(!dfa.update(s)){
@@ -131,8 +141,9 @@ TEST_CASE("levenshtein_dfa / small pattern", "[DFA][approx]"){
 	}
 
 	SECTION("edits = 2 / max edits = 1"){
+		integer max_edits = 1;
 		for(const auto& text: texts2){
-			auto dfa = trimatch::LevenshteinDFA(pattern, 1);
+			auto dfa = trimatch::LevenshteinDFA(pattern, max_edits);
 			bool passed = true;
 			for(const auto s: text){
 				if(!dfa.update(s)){
@@ -146,8 +157,9 @@ TEST_CASE("levenshtein_dfa / small pattern", "[DFA][approx]"){
 	}
 
 	SECTION("edits = 0 / max edits = 2"){
+		integer max_edits = 2;
 		for(const auto& text: texts0){
-			auto dfa = trimatch::LevenshteinDFA(pattern, 2);
+			auto dfa = trimatch::LevenshteinDFA(pattern, max_edits);
 			bool passed = true;
 			for(const auto s: text){
 				if(!dfa.update(s)){
@@ -161,8 +173,9 @@ TEST_CASE("levenshtein_dfa / small pattern", "[DFA][approx]"){
 	}
 
 	SECTION("edits = 1 / max edits = 2"){
+		integer max_edits = 2;
 		for(const auto& text: texts1){
-			auto dfa = trimatch::LevenshteinDFA(pattern, 2);
+			auto dfa = trimatch::LevenshteinDFA(pattern, max_edits);
 			bool passed = true;
 			for(const auto s: text){
 				if(!dfa.update(s)){
@@ -176,8 +189,9 @@ TEST_CASE("levenshtein_dfa / small pattern", "[DFA][approx]"){
 	}
 
 	SECTION("edits = 2 / max edits = 2"){
+		integer max_edits = 2;
 		for(const auto& text: texts2){
-			auto dfa = trimatch::LevenshteinDFA(pattern, 2);
+			auto dfa = trimatch::LevenshteinDFA(pattern, max_edits);
 			bool passed = true;
 			for(const auto s: text){
 				if(!dfa.update(s)){

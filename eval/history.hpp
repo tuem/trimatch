@@ -17,8 +17,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef TRIMATCH_EVAL_HISTORY_HPP
-#define TRIMATCH_EVAL_HISTORY_HPP
+#ifndef TRIMATCH_EVAL_HISTORY
+#define TRIMATCH_EVAL_HISTORY
 
 #include <time.h>
 

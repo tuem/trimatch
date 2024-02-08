@@ -1,25 +1,45 @@
-#ifndef TRIMATCH_EVAL_EDIT_DISTANCE_BP_HPP
-#define TRIMATCH_EVAL_EDIT_DISTANCE_BP_HPP
+/*
+trimatch
+https://github.com/tuem/trimatch
 
+Copyright 2021 Takashi Uemura
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+	http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+#ifndef TRIMATCH_EVAL_EDIT_DISTANCE_BP
+#define TRIMATCH_EVAL_EDIT_DISTANCE_BP
+
+#include <cstddef>
 #include <string>
 #include <vector>
 #include <map>
 #include <algorithm>
 
 template<
-	typename string_type = std::string,
-	typename bitvector_type = uint64_t,
-	typename distance_type = long long
+	typename text = std::string,
+	typename bitvector_type = std::uint64_t,
+	typename distance_type = std::uint32_t
 >
 struct EditDistanceBP
 {
 public:
-	using size_type = typename string_type::size_type;
-	using symbol_type = typename string_type::value_type;
+	using size_type = typename text::size_type;
+	using symbol_type = typename text::value_type;
 	using result_type = std::pair<size_type, distance_type>;
 
 protected:
-	string_type pattern;
+	text pattern;
 	size_type pattern_length;
 	symbol_type c_min, c_max;
 	size_type block_size;
@@ -123,14 +143,14 @@ protected:
 		c_max = PM.back().first;
 	}
 
-	distance_type distance_sp(const string_type& text)
+	distance_type distance_sp(const text& target)
 	{
 		auto& w = work.front();
 		w.reset();
 		w.VP = VP0;
 
 		distance_type D = pattern_length;
-		for(auto c: text){
+		for(auto c: target){
 			auto X = findValue(PM, c, zeroes).front() | w.VN;
 
 			w.D0 = ((w.VP + (X & w.VP)) ^ w.VP) | X;
@@ -151,7 +171,7 @@ protected:
 		return D;
 	}
 
-	distance_type distance_lp(const string_type& text)
+	distance_type distance_lp(const text& target)
 	{
 		constexpr bitvector_type msb = bitvector_type{1} << (bitWidth<bitvector_type>() - 1);
 
@@ -161,7 +181,7 @@ protected:
 		work.back().VP = VP0;
 
 		distance_type D = pattern_length;
-		for(auto c: text){
+		for(auto c: target){
 			const auto& PMc = findValue(PM, c, zeroes);
 			for(size_type r = 0; r < block_size; ++r){
 				auto& w = work[r];
@@ -195,24 +215,24 @@ protected:
 		return D;
 	}
 
-	distance_type distance(const string_type& text)
+	distance_type distance(const text& target)
 	{
-		if(text.empty()){
+		if(target.empty()){
 			return pattern_length;
 		}
 		else if(pattern_length == 0){
-			return text.size();
+			return target.size();
 		}
 
 		if(block_size == 1){
-			return distance_sp(text);
+			return distance_sp(target);
 		}
 		else{
-			return distance_lp(text);
+			return distance_lp(target);
 		}
 	}
 public:
-	EditDistanceBP(const string_type& pattern): pattern(pattern)
+	EditDistanceBP(const text& pattern): pattern(pattern)
 	{
 		if(pattern.empty()){
 			return;
@@ -230,7 +250,7 @@ public:
 	}
 
 	std::vector<result_type>
-	operator()(std::vector<string_type>& candidates)
+	operator()(std::vector<text>& candidates)
 	{
 		std::vector<result_type> results(candidates.size());
 		for(size_type i = 0; i < results.size(); ++i){
@@ -247,7 +267,7 @@ public:
 	}
 
 	template<class back_insert_iterator>
-	void operator()(const std::vector<string_type>& candidates, distance_type max, back_insert_iterator bi)
+	void operator()(const std::vector<text>& candidates, distance_type max, back_insert_iterator bi)
 	{
 		for(const auto& c: candidates){
 			auto d = distance(c);
