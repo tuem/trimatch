@@ -62,12 +62,12 @@ void exec(const index_type& index, integer max_distance)
 		if(last == '<'){
 			// common prefix search
 			for(const auto& p: searcher.prefix(query))
-				std::cout << std::setw(4) << ++count << ": " << p << std::endl;
+				std::cout << std::setw(4) << ++count << ": " << p.key() << std::endl;
 		}
 		else if(last == '*'){
 			// predictive search
 			for(const auto& t: searcher.predict(query))
-				std::cout << std::setw(4) << ++count << ": " << t << std::endl;
+				std::cout << std::setw(4) << ++count << ": " << t.key() << std::endl;
 		}
 		else if(last == '?'){
 			// approximate search

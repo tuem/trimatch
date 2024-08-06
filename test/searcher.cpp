@@ -87,14 +87,14 @@ TEST_CASE("searcher / small dictionary / prefix search", "[index][prefix]"){
 		text query = "";
 		std::set<text> results;
 		for(const auto& result: searcher.prefix(query))
-			results.insert(result);
+			results.insert(result.key());
 		CHECK(results.size() == 0);
 	}
 	SECTION("prefix search"){
 		text query = "AMPLIFY";
 		std::set<text> results;
 		for(const auto& result: searcher.prefix(query))
-			results.insert(result);
+			results.insert(result.key());
 		CHECK(results.size() == 3);
 		CHECK(results.count("A") > 0);
 		CHECK(results.count("AM") > 0);
@@ -104,7 +104,7 @@ TEST_CASE("searcher / small dictionary / prefix search", "[index][prefix]"){
 		text query = "BMP";
 		std::set<text> results;
 		for(const auto& result: searcher.prefix(query))
-			results.insert(result);
+			results.insert(result.key());
 		CHECK(results.size() == 0);
 	}
 }

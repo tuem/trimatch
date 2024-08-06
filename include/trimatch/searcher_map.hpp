@@ -150,7 +150,7 @@ struct index<text, item, integer, trie, approximate_matcher>::search_client::app
 				auto next = (*path.back()).children(); // first child
 				transition_succeeded = try_transition(next);
 			}
-			else if(!transition_succeeded && path.size() > 1 && path.back() != path.back().end()){
+			else if(!transition_succeeded && path.size() > 1 && path.back().incrementable()){
 				auto next = path.back();
 				++next; // next sibling
 				path.pop_back();
@@ -163,7 +163,7 @@ struct index<text, item, integer, trie, approximate_matcher>::search_client::app
 					current.pop_back();
 				}
 
-				while(path.size() > 1 && path.back() != path.back().end())
+				while(path.size() > 1 && !path.back().incrementable())
 					back_transition();
 				if(path.size() > 1){
 					auto next = path.back();

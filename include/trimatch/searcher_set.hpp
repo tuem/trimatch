@@ -211,7 +211,7 @@ void index<text, integer, trie, approximate_matcher>::search_client::predict(
 {
 	typename trie::common_searcher searcher(T);
 	for(const auto& r: searcher.predict(query))
-		*bi++ = r;
+		*bi++ = r.key();
 }
 
 template<class text, class integer, class trie, class approximate_matcher>
