@@ -21,23 +21,24 @@ limitations under the License.
 Main interface for exact matching, predictive search and approximate search
 */
 
-#ifndef TRIMATCH_SEARCHER_SET
-#define TRIMATCH_SEARCHER_SET
+#ifndef TRIMATCH_SEARCHER
+#define TRIMATCH_SEARCHER
 
-#include "index_set.hpp"
+#include <sftrie/util.hpp>
 
 namespace trimatch{
 
-namespace set{
-
 template<class text, class integer, class trie, class approximate_matcher>
-class index<text, integer, trie, approximate_matcher>::search_client
+class search_client
 {
 public:
+	using value_type = typename trie::value_type;
 	using prefix_search_iterator = typename trie::prefix_iterator;
 	using predictive_search_iterator = typename trie::subtree_iterator;
-	using approximate_search_result = std::pair<text, integer>;
-	using approximate_predictive_search_result = std::tuple<text, integer, integer>;
+	// matched text, associated value, edits
+	using approximate_search_result = std::tuple<text, value_type, integer>;
+	// predicted text, associated value, edits (matched part), edits (whole text)
+	using approximate_predictive_search_result = std::tuple<text, value_type, integer, integer>;
 
 	struct approximate_search_iterator;
 
@@ -65,7 +66,7 @@ public:
 
 private:
 	const trie& T;
-	typename trie::common_searcher trie_search_client;
+	typename trie::common_searcher trie_searcher;
 
 	template<class back_insert_iterator>
 	void approx_step(approximate_matcher& matcher,
@@ -81,7 +82,7 @@ private:
 
 
 template<class text, class integer, class trie, class approximate_matcher>
-struct index<text, integer, trie, approximate_matcher>::search_client::approximate_search_iterator
+struct search_client<text, integer, trie, approximate_matcher>::approximate_search_iterator
 {
 	const trie &T;
 
@@ -117,9 +118,9 @@ struct index<text, integer, trie, approximate_matcher>::search_client::approxima
 		return path != i.path;
 	}
 
-	const approximate_search_result operator*()
+	approximate_search_result operator*()
 	{
-		return std::make_pair(current, static_cast<integer>(matcher.distance()));
+		return std::make_tuple(current, (*path.back()).value(), static_cast<integer>(matcher.distance()));
 	}
 
 	void back_transition()
@@ -180,33 +181,33 @@ struct index<text, integer, trie, approximate_matcher>::search_client::approxima
 
 
 template<class text, class integer, class trie, class approximate_matcher>
-index<text, integer, trie, approximate_matcher>::search_client::search_client(const trie& T):
-	T(T), trie_search_client(T.searcher())
+search_client<text, integer, trie, approximate_matcher>::search_client(const trie& T):
+	T(T), trie_searcher(T.searcher())
 {}
 
 template<class text, class integer, class trie, class approximate_matcher>
-bool index<text, integer, trie, approximate_matcher>::search_client::exact(const text& query) const
+bool search_client<text, integer, trie, approximate_matcher>::exact(const text& query) const
 {
 	return T.exists(query);
 }
 
 template<class text, class integer, class trie, class approximate_matcher>
-typename index<text, integer, trie, approximate_matcher>::search_client::prefix_search_iterator
-index<text, integer, trie, approximate_matcher>::search_client::prefix(const text& query)
+typename search_client<text, integer, trie, approximate_matcher>::prefix_search_iterator
+search_client<text, integer, trie, approximate_matcher>::prefix(const text& query)
 {
-	return trie_search_client.prefix(query);
+	return trie_searcher.prefix(query);
 }
 
 template<class text, class integer, class trie, class approximate_matcher>
-typename index<text, integer, trie, approximate_matcher>::search_client::predictive_search_iterator
-index<text, integer, trie, approximate_matcher>::search_client::predict(const text& query)
+typename search_client<text, integer, trie, approximate_matcher>::predictive_search_iterator
+search_client<text, integer, trie, approximate_matcher>::predict(const text& query)
 {
-	return trie_search_client.predict(query);
+	return trie_searcher.predict(query);
 }
 
 template<class text, class integer, class trie, class approximate_matcher>
 template<class back_insert_iterator>
-void index<text, integer, trie, approximate_matcher>::search_client::predict(
+void search_client<text, integer, trie, approximate_matcher>::predict(
 	const text& query, back_insert_iterator bi) const
 {
 	typename trie::common_searcher searcher(T);
@@ -215,15 +216,15 @@ void index<text, integer, trie, approximate_matcher>::search_client::predict(
 }
 
 template<class text, class integer, class trie, class approximate_matcher>
-typename index<text, integer, trie, approximate_matcher>::search_client::approximate_search_iterator
-index<text, integer, trie, approximate_matcher>::search_client::approx(const text& query, integer max_edits) const
+typename search_client<text, integer, trie, approximate_matcher>::approximate_search_iterator
+search_client<text, integer, trie, approximate_matcher>::approx(const text& query, integer max_edits) const
 {
 	return approximate_search_iterator(T, query, max_edits);
 }
 
 template<class text, class integer, class trie, class approximate_matcher>
 template<class back_insert_iterator>
-void index<text, integer, trie, approximate_matcher>::search_client::approx(
+void search_client<text, integer, trie, approximate_matcher>::approx(
 	const text& query, integer max_edits, back_insert_iterator bi) const
 {
 	approximate_matcher matcher(query, max_edits);
@@ -233,14 +234,15 @@ void index<text, integer, trie, approximate_matcher>::search_client::approx(
 
 template<class text, class integer, class trie, class approximate_matcher>
 template<class back_insert_iterator>
-void index<text, integer, trie, approximate_matcher>::search_client::approx_step(
+void search_client<text, integer, trie, approximate_matcher>::approx_step(
 	approximate_matcher& matcher, typename trie::node_type root, text& current, back_insert_iterator& bi) const
 {
 	if(root.match() && matcher.matched())
-		*bi++ = std::make_pair(current, static_cast<integer>(matcher.distance()));
+		*bi++ = std::make_tuple(current,
+			sftrie::value_util<integer>::template const_ref<typename trie::item_type>(root.trie.raw_data()[root.node_id()].value, root.node_id()),
+			static_cast<integer>(matcher.distance()));
 	if(root.leaf())
 		return;
-	// TODO: after distance() leaches max_distance(), all we need to do is the exact matching process
 	for(const auto& n: root.children()){
 		if(matcher.update(n.label())){
 			current.push_back(n.label());
@@ -253,7 +255,7 @@ void index<text, integer, trie, approximate_matcher>::search_client::approx_step
 
 template<class text, class integer, class trie, class approximate_matcher>
 template<class back_insert_iterator>
-void index<text, integer, trie, approximate_matcher>::search_client::approx_predict(
+void search_client<text, integer, trie, approximate_matcher>::approx_predict(
 	const text& query, integer max_edits, back_insert_iterator bi) const
 {
 	approximate_matcher matcher(query, max_edits);
@@ -263,7 +265,7 @@ void index<text, integer, trie, approximate_matcher>::search_client::approx_pred
 
 template<class text, class integer, class trie, class approximate_matcher>
 template<class back_insert_iterator>
-void index<text, integer, trie, approximate_matcher>::search_client::approx_predict_step(
+void search_client<text, integer, trie, approximate_matcher>::approx_predict_step(
 	integer max_edits, approximate_matcher& matcher, typename trie::node_type root, text& current, back_insert_iterator& bi) const
 {
 	if(matcher.matched()){
@@ -272,7 +274,6 @@ void index<text, integer, trie, approximate_matcher>::search_client::approx_pred
 	}
 	if(root.leaf())
 		return;
-	// TODO: after distance() leaches max_distance(), all we need to do is the exact matching process
 	for(const auto& n: root.children()){
 		if(matcher.update(n.label())){
 			current.push_back(n.label());
@@ -285,12 +286,12 @@ void index<text, integer, trie, approximate_matcher>::search_client::approx_pred
 
 template<class text, class integer, class trie, class approximate_matcher>
 template<class back_insert_iterator>
-void index<text, integer, trie, approximate_matcher>::search_client::correct_approx_predict_results(
+void search_client<text, integer, trie, approximate_matcher>::correct_approx_predict_results(
 	integer max_edits, approximate_matcher& matcher, typename trie::node_type root,
 	text& current, integer prefix_edits, integer current_edits, back_insert_iterator& bi) const
 {
 	if(root.match())
-		*bi++ = std::make_tuple(current, std::min(prefix_edits, current_edits), current_edits);
+		*bi++ = std::make_tuple(current, root.value(), std::min(prefix_edits, current_edits), current_edits);
 	if(root.leaf())
 		return;
 	for(const auto& n: root.children()){
@@ -305,8 +306,6 @@ void index<text, integer, trie, approximate_matcher>::search_client::correct_app
 		}
 		current.pop_back();
 	}
-}
-
 }
 
 }

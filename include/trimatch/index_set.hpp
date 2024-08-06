@@ -28,7 +28,9 @@ Controller for sftrie::set and search_client
 #include <iterator>
 
 #include <sftrie/set.hpp>
+
 #include "levenshtein_dfa.hpp"
+#include "searcher.hpp"
 
 namespace trimatch{
 
@@ -43,7 +45,7 @@ template<
 class index
 {
 public:
-	class search_client;
+	using search_client = search_client<text, integer, trie, approximate_matcher>;
 
 	template<typename random_access_iterator>
 	index(random_access_iterator begin, random_access_iterator end);
@@ -121,7 +123,5 @@ trie& index<text, integer, trie, approximate_matcher>::raw_trie()
 }
 
 }
-
-#include "searcher_set.hpp"
 
 #endif

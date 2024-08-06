@@ -71,14 +71,14 @@ void exec(const index_type& index, integer max_distance)
 		}
 		else if(last == '?'){
 			// approximate search
-			for(const auto& [key, distance]: searcher.approx(query, max_distance))
+			for(const auto& [key, id, distance]: searcher.approx(query, max_distance))
 				std::cout << std::setw(4) << ++count << ": text=" << key << ", distance=" << distance << std::endl;
 		}
 		else if(last == '&'){
 			// approximate predictive search
-			std::vector<std::tuple<text, integer, integer>> results;
+			std::vector<std::tuple<text, integer, integer, integer>> results;
 			searcher.approx_predict(query, max_distance, std::back_inserter(results));
-			for(const auto& [key, distance_prefix, distance_whole]: results)
+			for(const auto& [key, id, distance_prefix, distance_whole]: results)
 				std::cout << std::setw(4) << ++count << ": text=" << key << ", distance(prefix)=" << distance_prefix << ", distance(whole)=" << distance_whole << std::endl;
 		}
 		else{
