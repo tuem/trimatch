@@ -37,7 +37,7 @@ Query options:
 using text = std::string;
 using integer = std::uint32_t;
 using item = std::array<integer, 2>; // id and search count
-using index_type = trimatch::map::index<text, item, integer>;
+using index_type = trimatch::index<text, item, integer>;
 
 template<typename index_type>
 void exec(index_type& index, integer max_distance)
@@ -132,7 +132,7 @@ int main(int argc, char* argv[])
 	std::shared_ptr<index_type> index;
 	if(load_index){
 		std::cerr << "loadinag index...";
-		auto index = trimatch::map::load<text, item>(input_path);
+		auto index = trimatch::load_map<text, item>(input_path);
 		std::cerr << "done." << std::endl;
 
 		exec(index, max_distance);
@@ -159,7 +159,7 @@ int main(int argc, char* argv[])
 		std::cerr << "done." << std::endl;
 
 		std::cerr << "building index...";
-		auto index = trimatch::map::build(texts.begin(), texts.end());
+		auto index = trimatch::build(texts.begin(), texts.end());
 		std::cerr << "done, " << texts.size() << " texts" << std::endl;
 
 		exec(index, max_distance);

@@ -104,7 +104,7 @@ int main(int argc, char* argv[])
 
 	if(load_index){
 		std::cerr << "loadinag index...";
-		auto index = trimatch::set::load<text>(input_path);
+		auto index = trimatch::load_set<text>(input_path);
 		std::cerr << "done." << std::endl;
 
 		exec(index, max_distance);
@@ -130,7 +130,8 @@ int main(int argc, char* argv[])
 		std::cerr << "done, " << texts.size() << " texts"  << std::endl;
 
 		std::cerr << "building index...";
-		auto index = trimatch::set::build(texts.begin(), texts.end());
+		auto index = trimatch::build(texts.begin(), texts.end());
+		//auto index = trimatch::set::build(texts.begin(), texts.end());
 		std::cerr << "done" << std::endl;
 
 		exec(index, max_distance);
