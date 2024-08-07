@@ -84,8 +84,8 @@ void exec(index_type& index, integer max_distance)
 					std::setw(4) << ++count << ": " <<
 					"text=" << key <<
 					", id=" << value[0] <<
-					" search count=" << ++value[1] <<
 					", distance=" << distance <<
+					" search count=" << ++value[1] <<
 					std::endl;
 
 			}
@@ -100,9 +100,9 @@ void exec(index_type& index, integer max_distance)
 					std::setw(4) << ++count << ": " <<
 					"text=" << key <<
 					", id=" << value[0] <<
-					" search count=" << ++value[1] <<
 					", distance(prefix)=" << distance_prefix <<
 					", distance(whole)=" << distance_whole <<
+					" search count=" << ++value[1] <<
 					std::endl;
 			}
 		}
