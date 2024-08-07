@@ -30,7 +30,7 @@ Controller for trie and approximate matcher
 
 #include "trie_selector.hpp"
 #include "levenshtein_dfa.hpp"
-#include "searcher.hpp"
+#include "search_client.hpp"
 #include "random_accessible_container.hpp"
 #include "readable.hpp"
 
@@ -138,19 +138,6 @@ index<text, item, integer, trie, approximate_matcher> build(random_access_iterat
 }
 
 template<
-	class random_access_iterator,
-	class text = typename random_access_iterator::value_type,
-	class integer = std::uint32_t,
-	class trie = typename trie_selector<sftrie::empty>::template trie_type<text, integer>,
-	class approximate_matcher = LevenshteinDFA<text, integer>
->
-index<text, sftrie::empty, integer, trie, approximate_matcher> build(random_access_iterator begin, random_access_iterator end)
-{
-	return index<text, sftrie::empty, integer, trie, approximate_matcher>(begin, end);
-}
-
-
-template<
 	class random_accessible_container,
 	class text = typename std::iterator_traits<random_accessible_container>::value_type::first_type,
 	class item = typename std::iterator_traits<random_accessible_container>::value_type::second_type,
@@ -162,19 +149,6 @@ index<text, item, integer, trie, approximate_matcher> build(const random_accessi
 {
 	return index<text, item, integer, trie, approximate_matcher>(texts);
 }
-
-template<
-	class random_accessible_container,
-	class text = typename random_accessible_container::value_type,
-	class integer = std::uint32_t,
-	class trie = typename trie_selector<sftrie::empty>::template trie_type<text, integer>,
-	class approximate_matcher = LevenshteinDFA<text, integer>
->
-index<text, sftrie::empty, integer, trie, approximate_matcher> build(const random_accessible_container& texts)
-{
-	return index<text, sftrie::empty, integer, trie, approximate_matcher>(texts);
-}
-
 
 template<
 	class text,
@@ -191,19 +165,6 @@ index<text, item, integer, trie, approximate_matcher> load_map(input_stream& is)
 
 template<
 	class text,
-	class integer = std::uint32_t,
-	class trie = typename trie_selector<sftrie::empty>::template trie_type<text, integer>,
-	class approximate_matcher = LevenshteinDFA<text, integer>,
-	class input_stream = std::ifstream
->
-index<text, sftrie::empty, integer, trie, approximate_matcher> load_set(input_stream& is)
-{
-	return index<text, sftrie::empty, integer, trie, approximate_matcher>(is);
-}
-
-
-template<
-	class text,
 	class item,
 	class integer = std::uint32_t,
 	class trie = sftrie::map<text, item, integer>,
@@ -212,6 +173,44 @@ template<
 index<text, item, integer, trie, approximate_matcher> load_map(const std::string path)
 {
 	return index<text, item, integer, trie, approximate_matcher>(path);
+}
+
+// if item is sftrie::empty, specialized version with sftrie::set will be used
+
+template<
+	class random_access_iterator,
+	class text = typename random_access_iterator::value_type,
+	class integer = std::uint32_t,
+	class trie = typename trie_selector<sftrie::empty>::template trie_type<text, integer>,
+	class approximate_matcher = LevenshteinDFA<text, integer>
+>
+index<text, sftrie::empty, integer, trie, approximate_matcher> build(random_access_iterator begin, random_access_iterator end)
+{
+	return index<text, sftrie::empty, integer, trie, approximate_matcher>(begin, end);
+}
+
+template<
+	class random_accessible_container,
+	class text = typename random_accessible_container::value_type,
+	class integer = std::uint32_t,
+	class trie = typename trie_selector<sftrie::empty>::template trie_type<text, integer>,
+	class approximate_matcher = LevenshteinDFA<text, integer>
+>
+index<text, sftrie::empty, integer, trie, approximate_matcher> build(const random_accessible_container& texts)
+{
+	return index<text, sftrie::empty, integer, trie, approximate_matcher>(texts);
+}
+
+template<
+	class text,
+	class integer = std::uint32_t,
+	class trie = typename trie_selector<sftrie::empty>::template trie_type<text, integer>,
+	class approximate_matcher = LevenshteinDFA<text, integer>,
+	class input_stream = std::ifstream
+>
+index<text, sftrie::empty, integer, trie, approximate_matcher> load_set(input_stream& is)
+{
+	return index<text, sftrie::empty, integer, trie, approximate_matcher>(is);
 }
 
 template<
@@ -226,6 +225,8 @@ index<text, sftrie::empty, integer, trie, approximate_matcher> load_set(const st
 }
 
 
+/*
+
 template<
 	class text,
 	class item,
@@ -234,6 +235,7 @@ template<
 	class approximate_matcher = LevenshteinDFA<text, integer>
 >
 using searcher = typename index<text, item, integer, trie, approximate_matcher>::search_client;
+*/
 
 }
 

@@ -53,7 +53,7 @@ public:
 	// predictive search
 	predictive_search_iterator predict(const text& query);
 	template<class back_insert_iterator>
-	void predict(const text& query, back_insert_iterator bi) const;
+	void predict(const text& query, back_insert_iterator bi);
 
 	// approximate search
 	approximate_search_iterator approx(const text& query, integer max_edits = 1) const;
@@ -208,10 +208,9 @@ search_client<text, integer, trie, approximate_matcher>::predict(const text& que
 template<class text, class integer, class trie, class approximate_matcher>
 template<class back_insert_iterator>
 void search_client<text, integer, trie, approximate_matcher>::predict(
-	const text& query, back_insert_iterator bi) const
+	const text& query, back_insert_iterator bi)
 {
-	typename trie::common_searcher searcher(T);
-	for(const auto& r: searcher.predict(query))
+	for(const auto& r: trie_search_client.predict(query))
 		*bi++ = r.key();
 }
 
