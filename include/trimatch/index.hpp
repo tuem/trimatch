@@ -18,7 +18,7 @@ limitations under the License.
 */
 
 /*
-Controller for trie and approximate matcher
+Controller for index and searcher
 */
 
 #ifndef TRIMATCH_INDEX
@@ -223,19 +223,6 @@ index<text, sftrie::empty, integer, trie, approximate_matcher> load_set(const st
 {
 	return index<text, sftrie::empty, integer, trie, approximate_matcher>(path);
 }
-
-
-/*
-
-template<
-	class text,
-	class item,
-	class integer = std::uint32_t,
-	class trie = typename trie_selector<item>::template trie_type<text, integer>,
-	class approximate_matcher = LevenshteinDFA<text, integer>
->
-using searcher = typename index<text, item, integer, trie, approximate_matcher>::search_client;
-*/
 
 }
 

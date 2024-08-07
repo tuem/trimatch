@@ -3,7 +3,6 @@ trimatch
 https://github.com/tuem/trimatch
 
 Copyright 2021 Takashi Uemura
-
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -18,11 +17,11 @@ limitations under the License.
 */
 
 /*
-Main interface for exact matching, predictive search and approximate search
+Main interface for search operations
 */
 
-#ifndef TRIMATCH_SEARCHER
-#define TRIMATCH_SEARCHER
+#ifndef TRIMATCH_SEARCH_CLIENT
+#define TRIMATCH_SEARCH_CLIENT
 
 #include <sftrie/util.hpp>
 
@@ -35,10 +34,11 @@ public:
 	using value_type = typename trie::value_type;
 	using prefix_search_iterator = typename trie::prefix_iterator;
 	using predictive_search_iterator = typename trie::subtree_iterator;
+
 	// matched text, associated value, edits
-	using approximate_search_result = std::tuple<text, value_type, integer>;
+	struct approximate_search_result;
 	// predicted text, associated value, edits (matched part), edits (whole text)
-	using approximate_predictive_search_result = std::tuple<text, value_type, integer, integer>;
+	struct approximate_predictive_search_result;
 
 	struct approximate_search_iterator;
 
@@ -82,6 +82,23 @@ private:
 
 
 template<class text, class integer, class trie, class approximate_matcher>
+struct search_client<text, integer, trie, approximate_matcher>::approximate_search_result
+{
+	text key;
+	typename trie::value_type value;
+	integer edits;
+};
+
+template<class text, class integer, class trie, class approximate_matcher>
+struct search_client<text, integer, trie, approximate_matcher>::approximate_predictive_search_result
+{
+	text key;
+	typename trie::value_type value;
+	integer edits_prefix;
+	integer edits_whole;
+};
+
+template<class text, class integer, class trie, class approximate_matcher>
 struct search_client<text, integer, trie, approximate_matcher>::approximate_search_iterator
 {
 	const trie &T;
@@ -120,7 +137,7 @@ struct search_client<text, integer, trie, approximate_matcher>::approximate_sear
 
 	approximate_search_result operator*() const
 	{
-		return std::make_tuple(current, (*path.back()).value(), static_cast<integer>(matcher.distance()));
+		return {current, (*path.back()).value(), static_cast<integer>(matcher.distance())};
 	}
 
 	void back_transition()
@@ -237,9 +254,7 @@ void search_client<text, integer, trie, approximate_matcher>::approx_step(
 	approximate_matcher& matcher, typename trie::node_type root, text& current, back_insert_iterator& bi) const
 {
 	if(root.match() && matcher.matched())
-		*bi++ = std::make_tuple(current,
-			sftrie::value_util<integer>::template const_ref<typename trie::item_type>(root.trie.raw_data()[root.node_id()].value, root.node_id()),
-			static_cast<integer>(matcher.distance()));
+		*bi++ = {current, root.value(), static_cast<integer>(matcher.distance())};
 	if(root.leaf())
 		return;
 	for(const auto& n: root.children()){
@@ -290,7 +305,7 @@ void search_client<text, integer, trie, approximate_matcher>::correct_approx_pre
 	text& current, integer prefix_edits, integer current_edits, back_insert_iterator& bi) const
 {
 	if(root.match())
-		*bi++ = std::make_tuple(current, root.value(), std::min(prefix_edits, current_edits), current_edits);
+		*bi++ = {current, root.value(), std::min(prefix_edits, current_edits), current_edits};
 	if(root.leaf())
 		return;
 	for(const auto& n: root.children()){
