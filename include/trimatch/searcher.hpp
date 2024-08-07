@@ -66,7 +66,7 @@ public:
 
 private:
 	const trie& T;
-	typename trie::common_searcher trie_searcher;
+	typename trie::common_searcher trie_search_client;
 
 	template<class back_insert_iterator>
 	void approx_step(approximate_matcher& matcher,
@@ -118,7 +118,7 @@ struct search_client<text, integer, trie, approximate_matcher>::approximate_sear
 		return path != i.path;
 	}
 
-	approximate_search_result operator*()
+	approximate_search_result operator*() const
 	{
 		return std::make_tuple(current, (*path.back()).value(), static_cast<integer>(matcher.distance()));
 	}
@@ -182,7 +182,7 @@ struct search_client<text, integer, trie, approximate_matcher>::approximate_sear
 
 template<class text, class integer, class trie, class approximate_matcher>
 search_client<text, integer, trie, approximate_matcher>::search_client(const trie& T):
-	T(T), trie_searcher(T.searcher())
+	T(T), trie_search_client(T.searcher())
 {}
 
 template<class text, class integer, class trie, class approximate_matcher>
@@ -195,14 +195,14 @@ template<class text, class integer, class trie, class approximate_matcher>
 typename search_client<text, integer, trie, approximate_matcher>::prefix_search_iterator
 search_client<text, integer, trie, approximate_matcher>::prefix(const text& query)
 {
-	return trie_searcher.prefix(query);
+	return trie_search_client.prefix(query);
 }
 
 template<class text, class integer, class trie, class approximate_matcher>
 typename search_client<text, integer, trie, approximate_matcher>::predictive_search_iterator
 search_client<text, integer, trie, approximate_matcher>::predict(const text& query)
 {
-	return trie_searcher.predict(query);
+	return trie_search_client.predict(query);
 }
 
 template<class text, class integer, class trie, class approximate_matcher>
