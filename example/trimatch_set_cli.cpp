@@ -19,7 +19,7 @@ limitations under the License.
 
 /*
 Text search program using trimatch.
-Usage: trimatch_set_cli input_path [max_distance=1] [load_index=false]
+Usage: trimatch_set_cli input_path [max_edits=1] [load_index=false]
 Query options:
 - ends with '*': predictive search
 - ends with '?': apprximate search
@@ -38,7 +38,7 @@ using text = std::string;
 using integer = std::uint32_t;
 
 template<typename index_type>
-void exec(const index_type& index, integer max_distance)
+void exec(const index_type& index, integer max_edits)
 {
 	auto searcher = index.searcher();
 	while(true){
@@ -71,15 +71,15 @@ void exec(const index_type& index, integer max_distance)
 		}
 		else if(last == '?'){
 			// approximate search
-			for(const auto& [key, id, distance]: searcher.approx(query, max_distance))
-				std::cout << std::setw(4) << ++count << ": text=" << key << ", distance=" << distance << std::endl;
+			for(const auto& [key, value, edits]: searcher.approx(query, max_edits))
+				std::cout << std::setw(4) << ++count << ": text=" << key << ", id=" << value << ", edits=" << edits << std::endl;
 		}
 		else if(last == '&'){
 			// approximate predictive search
 			std::vector<std::tuple<text, integer, integer, integer>> results;
-			searcher.approx_predict(query, max_distance, std::back_inserter(results));
-			for(const auto& [key, id, distance_prefix, distance_whole]: results)
-				std::cout << std::setw(4) << ++count << ": text=" << key << ", distance(prefix)=" << distance_prefix << ", distance(whole)=" << distance_whole << std::endl;
+			searcher.approx_predict(query, max_edits, std::back_inserter(results));
+			for(const auto& [key, id, edits_prefix, edits_whole]: results)
+				std::cout << std::setw(4) << ++count << ": text=" << key << ", edits(prefix)=" << edits_prefix << ", edits(whole)=" << edits_whole << std::endl;
 		}
 		else{
 			// exact match
@@ -94,20 +94,20 @@ void exec(const index_type& index, integer max_distance)
 int main(int argc, char* argv[])
 {
 	if(argc < 2){
-		std::cerr << "usage: " << argv[0] << " input_path [load_index=false] [max_distance=1]" << std::endl;
+		std::cerr << "usage: " << argv[0] << " input_path [load_index=false] [max_edits=1]" << std::endl;
 		return 0;
 	}
 
 	std::string input_path = argv[1];
 	bool load_index = argc > 2 && std::string(argv[2]) == "true";
-	int max_distance = argc > 3 ? std::stoi(argv[3]) : 2;
+	int max_edits = argc > 3 ? std::stoi(argv[3]) : 2;
 
 	if(load_index){
 		std::cerr << "loadinag index...";
 		auto index = trimatch::load_set<text>(input_path);
 		std::cerr << "done." << std::endl;
 
-		exec(index, max_distance);
+		exec(index, max_edits);
 	}
 	else{
 		std::vector<text> texts;
@@ -134,7 +134,7 @@ int main(int argc, char* argv[])
 		//auto index = trimatch::set::build(texts.begin(), texts.end());
 		std::cerr << "done" << std::endl;
 
-		exec(index, max_distance);
+		exec(index, max_edits);
 	}
 
 	return 0;
