@@ -28,10 +28,11 @@ Controller for index and searcher
 #include <iterator>
 #include <fstream>
 
+#include <sftrie/random_access_container.hpp>
+
 #include "trie_selector.hpp"
 #include "levenshtein_dfa.hpp"
 #include "search_client.hpp"
-#include "random_accessible_container.hpp"
 #include "readable.hpp"
 
 namespace trimatch{
@@ -48,9 +49,9 @@ class index
 public:
 	using search_client = search_client<text, integer, trie, approximate_matcher>;
 
-	template<typename random_access_iterator>
-	index(random_access_iterator begin, random_access_iterator end);
-	template<random_accessible_container container>
+	template<std::random_access_iterator iterator>
+	index(iterator begin, iterator end);
+	template<sftrie::random_access_container container>
 	index(const container& texts);
 	template<readable input_stream>
 	index(input_stream& is);
@@ -69,15 +70,15 @@ private:
 };
 
 template<class text, class item, class integer, class trie, class approximate_matcher>
-template<class random_access_iterator>
+template<std::random_access_iterator iterator>
 index<text, item, integer, trie, approximate_matcher>::index(
-	random_access_iterator begin, random_access_iterator end
+	iterator begin, iterator end
 ):
 	T(begin, end)
 {}
 
 template<class text, class item, class integer, class trie, class approximate_matcher>
-template<random_accessible_container container>
+template<sftrie::random_access_container container>
 index<text, item, integer, trie, approximate_matcher>::index(
 	const container& texts
 ):
