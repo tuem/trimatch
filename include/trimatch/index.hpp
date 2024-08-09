@@ -47,6 +47,14 @@ template<
 class index
 {
 public:
+	using text_type = text;
+	using item_type = item;
+	using value_type = typename trie_value<item, integer>::actual;
+	using integer_type = integer;
+	using trie_type = trie;
+	using matcher_type = approximate_matcher;
+	using searcher_type = search_client<trie, approximate_matcher>;
+
 	template<std::random_access_iterator iterator>
 	index(iterator begin, iterator end);
 	template<sftrie::random_access_container container>
