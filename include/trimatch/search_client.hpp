@@ -25,11 +25,20 @@ Main interface for search operations
 
 #include <sftrie/util.hpp>
 
+#include "levenshtein_dfa.hpp"
+
 namespace trimatch{
 
-template<class text, class integer, class trie, class approximate_matcher>
+template<
+	class trie,
+	class approximate_matcher = LevenshteinDFA<typename trie::text_type, typename trie::integer_type>
+>
 class search_client
 {
+private:
+	using text = typename trie::text_type;
+	using integer = typename trie::integer_type;
+
 public:
 	using value_type = typename trie::value_type;
 	using prefix_search_iterator = typename trie::prefix_iterator;
@@ -81,16 +90,16 @@ private:
 };
 
 
-template<class text, class integer, class trie, class approximate_matcher>
-struct search_client<text, integer, trie, approximate_matcher>::approximate_search_result
+template<class trie, class approximate_matcher>
+struct search_client<trie, approximate_matcher>::approximate_search_result
 {
 	text key;
 	typename trie::value_type value;
 	integer edits;
 };
 
-template<class text, class integer, class trie, class approximate_matcher>
-struct search_client<text, integer, trie, approximate_matcher>::approximate_predictive_search_result
+template<class trie, class approximate_matcher>
+struct search_client<trie, approximate_matcher>::approximate_predictive_search_result
 {
 	text key;
 	typename trie::value_type value;
@@ -98,8 +107,8 @@ struct search_client<text, integer, trie, approximate_matcher>::approximate_pred
 	integer edits_whole;
 };
 
-template<class text, class integer, class trie, class approximate_matcher>
-struct search_client<text, integer, trie, approximate_matcher>::approximate_search_iterator
+template<class trie, class approximate_matcher>
+struct search_client<trie, approximate_matcher>::approximate_search_iterator
 {
 	const trie &T;
 
@@ -197,50 +206,50 @@ struct search_client<text, integer, trie, approximate_matcher>::approximate_sear
 };
 
 
-template<class text, class integer, class trie, class approximate_matcher>
-search_client<text, integer, trie, approximate_matcher>::search_client(const trie& T):
+template<class trie, class approximate_matcher>
+search_client<trie, approximate_matcher>::search_client(const trie& T):
 	T(T), trie_search_client(T.searcher())
 {}
 
-template<class text, class integer, class trie, class approximate_matcher>
-bool search_client<text, integer, trie, approximate_matcher>::exact(const text& query) const
+template<class trie, class approximate_matcher>
+bool search_client<trie, approximate_matcher>::exact(const text& query) const
 {
 	return T.exists(query);
 }
 
-template<class text, class integer, class trie, class approximate_matcher>
-typename search_client<text, integer, trie, approximate_matcher>::prefix_search_iterator
-search_client<text, integer, trie, approximate_matcher>::prefix(const text& query)
+template<class trie, class approximate_matcher>
+typename search_client<trie, approximate_matcher>::prefix_search_iterator
+search_client<trie, approximate_matcher>::prefix(const text& query)
 {
 	return trie_search_client.prefix(query);
 }
 
-template<class text, class integer, class trie, class approximate_matcher>
-typename search_client<text, integer, trie, approximate_matcher>::predictive_search_iterator
-search_client<text, integer, trie, approximate_matcher>::predict(const text& query)
+template<class trie, class approximate_matcher>
+typename search_client<trie, approximate_matcher>::predictive_search_iterator
+search_client<trie, approximate_matcher>::predict(const text& query)
 {
 	return trie_search_client.predict(query);
 }
 
-template<class text, class integer, class trie, class approximate_matcher>
+template<class trie, class approximate_matcher>
 template<class back_insert_iterator>
-void search_client<text, integer, trie, approximate_matcher>::predict(
+void search_client<trie, approximate_matcher>::predict(
 	const text& query, back_insert_iterator bi)
 {
 	for(const auto& r: trie_search_client.predict(query))
 		*bi++ = r.key();
 }
 
-template<class text, class integer, class trie, class approximate_matcher>
-typename search_client<text, integer, trie, approximate_matcher>::approximate_search_iterator
-search_client<text, integer, trie, approximate_matcher>::approx(const text& query, integer max_edits) const
+template<class trie, class approximate_matcher>
+typename search_client<trie, approximate_matcher>::approximate_search_iterator
+search_client<trie, approximate_matcher>::approx(const text& query, integer max_edits) const
 {
 	return approximate_search_iterator(T, query, max_edits);
 }
 
-template<class text, class integer, class trie, class approximate_matcher>
+template<class trie, class approximate_matcher>
 template<class back_insert_iterator>
-void search_client<text, integer, trie, approximate_matcher>::approx(
+void search_client<trie, approximate_matcher>::approx(
 	const text& query, integer max_edits, back_insert_iterator bi) const
 {
 	approximate_matcher matcher(query, max_edits);
@@ -248,9 +257,9 @@ void search_client<text, integer, trie, approximate_matcher>::approx(
 	approx_step(matcher, T.root(), current, bi);
 }
 
-template<class text, class integer, class trie, class approximate_matcher>
+template<class trie, class approximate_matcher>
 template<class back_insert_iterator>
-void search_client<text, integer, trie, approximate_matcher>::approx_step(
+void search_client<trie, approximate_matcher>::approx_step(
 	approximate_matcher& matcher, typename trie::node_type root, text& current, back_insert_iterator& bi) const
 {
 	if(root.match() && matcher.matched())
@@ -267,9 +276,9 @@ void search_client<text, integer, trie, approximate_matcher>::approx_step(
 	}
 }
 
-template<class text, class integer, class trie, class approximate_matcher>
+template<class trie, class approximate_matcher>
 template<class back_insert_iterator>
-void search_client<text, integer, trie, approximate_matcher>::approx_predict(
+void search_client<trie, approximate_matcher>::approx_predict(
 	const text& query, integer max_edits, back_insert_iterator bi) const
 {
 	approximate_matcher matcher(query, max_edits);
@@ -277,9 +286,9 @@ void search_client<text, integer, trie, approximate_matcher>::approx_predict(
 	approx_predict_step(max_edits, matcher, T.root(), current, bi);
 }
 
-template<class text, class integer, class trie, class approximate_matcher>
+template<class trie, class approximate_matcher>
 template<class back_insert_iterator>
-void search_client<text, integer, trie, approximate_matcher>::approx_predict_step(
+void search_client<trie, approximate_matcher>::approx_predict_step(
 	integer max_edits, approximate_matcher& matcher, typename trie::node_type root, text& current, back_insert_iterator& bi) const
 {
 	if(matcher.matched()){
@@ -298,9 +307,9 @@ void search_client<text, integer, trie, approximate_matcher>::approx_predict_ste
 	}
 }
 
-template<class text, class integer, class trie, class approximate_matcher>
+template<class trie, class approximate_matcher>
 template<class back_insert_iterator>
-void search_client<text, integer, trie, approximate_matcher>::correct_approx_predict_results(
+void search_client<trie, approximate_matcher>::correct_approx_predict_results(
 	integer max_edits, approximate_matcher& matcher, typename trie::node_type root,
 	text& current, integer prefix_edits, integer current_edits, back_insert_iterator& bi) const
 {

@@ -59,7 +59,7 @@ public:
 	void save(output_stream& os) const;
 	void save(std::string path) const;
 
-	search_client<text, integer, trie, approximate_matcher> searcher() const;
+	search_client<trie, approximate_matcher> searcher() const;
 
 	trie& raw_trie();
 
@@ -108,10 +108,10 @@ void index<text, item, integer, trie, approximate_matcher>::save(std::string pat
 }
 
 template<class text, class item, class integer, class trie, class approximate_matcher>
-search_client<text, integer, trie, approximate_matcher>
+search_client<trie, approximate_matcher>
 index<text, item, integer, trie, approximate_matcher>::searcher() const
 {
-	return search_client<text, integer, trie, approximate_matcher>(T);
+	return search_client<trie, approximate_matcher>(T);
 }
 
 template<class text, class item, class integer, class trie, class approximate_matcher>
