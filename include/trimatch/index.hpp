@@ -29,6 +29,7 @@ Controller for index and searcher
 #include <fstream>
 
 #include <sftrie/random_access_container.hpp>
+#include <sftrie/util.hpp>
 
 #include "trie_selector.hpp"
 #include "levenshtein_dfa.hpp"
@@ -49,7 +50,7 @@ class index
 public:
 	using text_type = text;
 	using item_type = item;
-	using value_type = typename trie_value<item, integer>::actual;
+	using value_type = typename sftrie::trie_value<item, integer>::actual;
 	using integer_type = integer;
 	using trie_type = trie;
 	using matcher_type = approximate_matcher;
