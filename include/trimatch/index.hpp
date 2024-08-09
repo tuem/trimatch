@@ -47,8 +47,6 @@ template<
 class index
 {
 public:
-	using search_client = search_client<text, integer, trie, approximate_matcher>;
-
 	template<std::random_access_iterator iterator>
 	index(iterator begin, iterator end);
 	template<sftrie::random_access_container container>
@@ -61,7 +59,7 @@ public:
 	void save(output_stream& os) const;
 	void save(std::string path) const;
 
-	search_client searcher() const;
+	search_client<text, integer, trie, approximate_matcher> searcher() const;
 
 	trie& raw_trie();
 
@@ -110,10 +108,10 @@ void index<text, item, integer, trie, approximate_matcher>::save(std::string pat
 }
 
 template<class text, class item, class integer, class trie, class approximate_matcher>
-typename index<text, item, integer, trie, approximate_matcher>::search_client
+search_client<text, integer, trie, approximate_matcher>
 index<text, item, integer, trie, approximate_matcher>::searcher() const
 {
-	return search_client(T);
+	return search_client<text, integer, trie, approximate_matcher>(T);
 }
 
 template<class text, class item, class integer, class trie, class approximate_matcher>
