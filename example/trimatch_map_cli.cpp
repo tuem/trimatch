@@ -129,7 +129,6 @@ int main(int argc, char* argv[])
 	bool load_index = argc > 2 && std::string(argv[2]) == "true";
 	int max_edits = argc > 3 ? std::stoi(argv[3]) : 2;
 
-	std::shared_ptr<index_type> index;
 	if(load_index){
 		std::cerr << "loadinag index...";
 		auto index = trimatch::load_map<text, item>(input_path);
