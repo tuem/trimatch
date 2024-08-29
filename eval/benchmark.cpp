@@ -27,7 +27,9 @@ limitations under the License.
 #include <random>
 #include <chrono>
 
-#include <trimatch/index.hpp>
+#include <sftrie/set.hpp>
+#include <trimatch/levenshtein_dfa.hpp>
+#include <trimatch/search_client.hpp>
 
 #include "matcher/edit_distance_dp.hpp"
 #include "matcher/edit_distance_bp.hpp"
@@ -74,8 +76,8 @@ size_t exec_approx_dp_trie(const set& trie,
 	const std::vector<typename set::text_type>& queries, typename set::integer_type max_edits = 1)
 {
 	// since trie is already built, directly create searcher without trimatch::index
-	trimatch::set::searcher<text, integer, sftrie::set<text, integer>, OnlineEditDistance<text, integer>> searcher(trie);
-	std::vector<std::pair<text, integer>> results;
+	trimatch::search_client<sftrie::set<text, integer>, OnlineEditDistance<text, integer>> searcher(trie);
+	std::vector<std::tuple<text, integer, integer>> results;
 	size_t found = 0;
 	for(const auto& query: queries){
 		searcher.approx(query, max_edits, std::back_inserter(results));
@@ -89,8 +91,8 @@ template<typename set>
 size_t exec_approx_dfa_trie(const set& trie,
 	const std::vector<typename set::text_type>& queries, typename set::integer_type max_edits = 1)
 {
-	trimatch::set::searcher<text, integer> searcher(trie);
-	std::vector<std::pair<text, integer>> results;
+	trimatch::search_client<sftrie::set<text, integer>, trimatch::LevenshteinDFA<text, integer>> searcher(trie);
+	std::vector<std::tuple<text, integer, integer>> results;
 	size_t found = 0;
 	for(const auto& query: queries){
 		searcher.approx(query, max_edits, std::back_inserter(results));

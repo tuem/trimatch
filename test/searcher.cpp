@@ -47,7 +47,7 @@ TEST_CASE("searcher / small dictionary / exact matching", "[index][exact]"){
 	};
 	sftrie::sort_texts(texts.begin(), texts.end());
 
-	auto index = trimatch::set::build(texts.begin(), texts.end());
+	auto index = trimatch::build(texts.begin(), texts.end());
 	auto searcher = index.searcher();
 
 	SECTION("exact matching (will be succeeded)"){
@@ -80,21 +80,21 @@ TEST_CASE("searcher / small dictionary / prefix search", "[index][prefix]"){
 	};
 	sftrie::sort_texts(texts.begin(), texts.end());
 
-	auto index = trimatch::set::build(texts.begin(), texts.end());
+	auto index = trimatch::build(texts.begin(), texts.end());
 	auto searcher = index.searcher();
 
 	SECTION("prefix search (empty query)"){
 		text query = "";
 		std::set<text> results;
 		for(const auto& result: searcher.prefix(query))
-			results.insert(result);
+			results.insert(result.key());
 		CHECK(results.size() == 0);
 	}
 	SECTION("prefix search"){
 		text query = "AMPLIFY";
 		std::set<text> results;
 		for(const auto& result: searcher.prefix(query))
-			results.insert(result);
+			results.insert(result.key());
 		CHECK(results.size() == 3);
 		CHECK(results.count("A") > 0);
 		CHECK(results.count("AM") > 0);
@@ -104,7 +104,7 @@ TEST_CASE("searcher / small dictionary / prefix search", "[index][prefix]"){
 		text query = "BMP";
 		std::set<text> results;
 		for(const auto& result: searcher.prefix(query))
-			results.insert(result);
+			results.insert(result.key());
 		CHECK(results.size() == 0);
 	}
 }
@@ -126,7 +126,7 @@ TEST_CASE("searcher / small dictionary / predictive search", "[index][predict]")
 	};
 	sftrie::sort_texts(texts.begin(), texts.end());
 
-	auto index = trimatch::set::build(texts.begin(), texts.end());
+	auto index = trimatch::build(texts.begin(), texts.end());
 	auto searcher = index.searcher();
 
 	SECTION("predictive search (empty query)"){
@@ -182,12 +182,12 @@ TEST_CASE("searcher / small dictionary / approximate search", "[index][approx]")
 	};
 	sftrie::sort_texts(texts.begin(), texts.end());
 
-	auto index = trimatch::set::build(texts.begin(), texts.end());
+	auto index = trimatch::build(texts.begin(), texts.end());
 	auto searcher = index.searcher();
 
 	SECTION("approximate match (empty query)"){
 		text query = "";
-		std::vector<std::pair<text, unsigned long>> results;
+		std::vector<std::tuple<text, unsigned long, unsigned long>> results;
 
 		searcher.approx(query, 0, std::back_inserter(results));
 		CHECK(results.size() == 0);
@@ -202,24 +202,24 @@ TEST_CASE("searcher / small dictionary / approximate search", "[index][approx]")
 	}
 	SECTION("approximate match"){
 		text query = "AD";
-		std::vector<std::pair<text, unsigned long>> results;
+		std::vector<std::tuple<text, unsigned long, unsigned long>> results;
 
 		searcher.approx(query, 1, std::back_inserter(results));
 		CHECK(results.size() == 5);
 		CHECK(std::get<0>(results[0]) == text("A"));
-		CHECK(std::get<1>(results[0]) == 1);
+		CHECK(std::get<2>(results[0]) == 1);
 		CHECK(std::get<0>(results[1]) == text("AM"));
-		CHECK(std::get<1>(results[1]) == 1);
+		CHECK(std::get<2>(results[1]) == 1);
 		CHECK(std::get<0>(results[2]) == text("AMD"));
-		CHECK(std::get<1>(results[2]) == 1);
+		CHECK(std::get<2>(results[2]) == 1);
 		CHECK(std::get<0>(results[3]) == text("CAD"));
-		CHECK(std::get<1>(results[3]) == 1);
+		CHECK(std::get<2>(results[3]) == 1);
 		CHECK(std::get<0>(results[4]) == text("MD"));
-		CHECK(std::get<1>(results[4]) == 1);
+		CHECK(std::get<2>(results[4]) == 1);
 	}
 	SECTION("approximate match (different minimum edits)"){
 		text query = "CORP";
-		std::vector<std::pair<text, unsigned long>> results;
+		std::vector<std::tuple<text, unsigned long, unsigned long>> results;
 
 		searcher.approx(query, 1, std::back_inserter(results));
 		CHECK(results.size() == 0);
