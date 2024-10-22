@@ -158,7 +158,7 @@ int main(int argc, char* argv[])
 		std::cerr << "done." << std::endl;
 
 		std::cerr << "building index...";
-		auto index = trimatch::build(texts.begin(), texts.end());
+		auto index = trimatch::build(texts.begin(), texts.end(), true);
 		std::cerr << "done, " << texts.size() << " texts" << std::endl;
 
 		exec(index, max_edits);
