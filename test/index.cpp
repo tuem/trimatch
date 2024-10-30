@@ -25,7 +25,34 @@ limitations under the License.
 
 
 using text = std::string;
+using integer = std::uint32_t;
 
+
+TEST_CASE("index / exact matching / default constructor", "[index][exact]"){
+	trimatch::index<text> index;
+	auto searcher = index.searcher();
+
+	SECTION("exact matching (will be succeeded)"){
+	}
+	SECTION("exact matching (will be failed)"){
+		CHECK_FALSE(searcher.exact(""));
+		CHECK_FALSE(searcher.exact("A"));
+		CHECK_FALSE(searcher.exact("BC"));
+	}
+}
+
+TEST_CASE("index (map) / exact matching / default constructor", "[index][exact]"){
+	trimatch::index<text, integer> index;
+	auto searcher = index.searcher();
+
+	SECTION("exact matching (will be succeeded)"){
+	}
+	SECTION("exact matching (will be failed)"){
+		CHECK_FALSE(searcher.exact(""));
+		CHECK_FALSE(searcher.exact("A"));
+		CHECK_FALSE(searcher.exact("BC"));
+	}
+}
 
 TEST_CASE("index / exact matching / empty dictionary", "[index][exact]"){
 	std::vector<text> texts = {

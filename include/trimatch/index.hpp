@@ -40,7 +40,7 @@ namespace trimatch{
 
 template<
 	class text,
-	class item,
+	class item = sftrie::empty,
 	class integer = std::uint32_t,
 	class trie = typename trie_selector<item>::template trie_type<text, integer>,
 	class approximate_matcher = LevenshteinDFA<text, integer>
@@ -56,6 +56,7 @@ public:
 	using matcher_type = approximate_matcher;
 	using searcher_type = search_client<trie, approximate_matcher>;
 
+	index();
 	template<std::random_access_iterator iterator>
 	index(iterator begin, iterator end, bool two_pass = false);
 	template<sftrie::random_access_container container>
@@ -75,6 +76,11 @@ public:
 private:
 	trie T;
 };
+
+template<class text, class item, class integer, class trie, class approximate_matcher>
+index<text, item, integer, trie, approximate_matcher>::index():
+	T()
+{}
 
 template<class text, class item, class integer, class trie, class approximate_matcher>
 template<std::random_access_iterator iterator>
