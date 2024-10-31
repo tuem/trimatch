@@ -65,11 +65,19 @@ public:
 	index(input_stream& is);
 	index(std::string path);
 
+	template<std::random_access_iterator iterator>
+	integer build(iterator begin, iterator end, bool two_pass = false);
+	template<sftrie::random_access_container container>
+	integer build(const container& texts, bool two_pass = false);
+	template<readable input_stream>
+	integer load(input_stream& is);
+	integer load(std::string path);
+
 	template<typename output_stream>
 	void save(output_stream& os) const;
 	void save(std::string path) const;
 
-	search_client<trie, approximate_matcher> searcher() const;
+	searcher_type searcher() const;
 
 	trie& raw_trie();
 
@@ -108,6 +116,35 @@ template<class text, class item, class integer, class trie, class approximate_ma
 index<text, item, integer, trie, approximate_matcher>::index(std::string path):
 	T(path)
 {}
+
+template<class text, class item, class integer, class trie, class approximate_matcher>
+template<std::random_access_iterator iterator>
+integer index<text, item, integer, trie, approximate_matcher>::build(
+	iterator begin, iterator end, bool two_pass)
+{
+	return T.construct(begin, end, two_pass);
+}
+
+template<class text, class item, class integer, class trie, class approximate_matcher>
+template<sftrie::random_access_container container>
+integer index<text, item, integer, trie, approximate_matcher>::build(
+	const container& texts, bool two_pass)
+{
+	return T.construct(texts, two_pass);
+}
+
+template<class text, class item, class integer, class trie, class approximate_matcher>
+template<readable input_stream>
+integer index<text, item, integer, trie, approximate_matcher>::load(input_stream& is)
+{
+	return T.load(is);
+}
+
+template<class text, class item, class integer, class trie, class approximate_matcher>
+integer index<text, item, integer, trie, approximate_matcher>::load(std::string path)
+{
+	return T.load(path);
+}
 
 template<class text, class item, class integer, class trie, class approximate_matcher>
 template<class output_stream>
