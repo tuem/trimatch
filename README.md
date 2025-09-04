@@ -1,4 +1,4 @@
-# Trimatch: Trie-based (Exact|Predictive|Approximate) String Matching Library
+# trimatch: trie-based (exact|predictive|approximate) string matching library
 
 ## Usage
 
